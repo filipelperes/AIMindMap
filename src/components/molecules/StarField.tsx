@@ -1,4 +1,4 @@
-import React, { useRef, useMemo } from 'react'
+import React, { useRef, useMemo, useState, useEffect } from 'react'
 import { useFrame } from '@react-three/fiber'
 import { Points, PointMaterial } from '@react-three/drei'
 import * as THREE from 'three'
@@ -16,12 +16,10 @@ interface StarFieldProps {
   rotationSpeedX?: number
   /** Velocidade de rotação Y (default: 0.04) */
   rotationSpeedY?: number
+  /** Atraso em ms para fade-in (default: 0) */
+  delay?: number
 }
 
-/**
- * Campo de estrelas animado em 3D.
- * Evolução do NeuronBackground original com mais controle.
- */
 const StarField: React.FC<StarFieldProps> = React.memo(
   ({
     count = 3000,
@@ -30,8 +28,16 @@ const StarField: React.FC<StarFieldProps> = React.memo(
     size = 0.02,
     rotationSpeedX = 0.05,
     rotationSpeedY = 0.04,
+    delay = 0,
   }) => {
     const ref = useRef<THREE.Points>(null!)
+    const [opacity, setOpacity] = useState(delay === 0 ? 1 : 0)
+
+    useEffect(() => {
+      if (delay === 0) return
+      const timer = setTimeout(() => setOpacity(1), delay)
+      return () => clearTimeout(timer)
+    }, [delay])
 
     const positions = useMemo(() => {
       const pos = new Float32Array(count * 3)
@@ -57,6 +63,7 @@ const StarField: React.FC<StarFieldProps> = React.memo(
             size={size}
             sizeAttenuation
             depthWrite={false}
+            opacity={opacity}
           />
         </Points>
       </group>

@@ -2,6 +2,7 @@ import React from 'react'
 import SectionTitle from '../atoms/SectionTitle'
 import { registerRenderer } from '../../services/contentRegistry'
 import type { SectionRendererProps } from '../../services/contentRegistry'
+import { useTheme } from '../../store/ThemeContext'
 
 /**
  * Molécula que renderiza uma analogia ou exemplo do cotidiano.
@@ -9,6 +10,7 @@ import type { SectionRendererProps } from '../../services/contentRegistry'
  */
 const SectionAnalogy: React.FC<SectionRendererProps> = React.memo(
   ({ section, groupColor }) => {
+    const { mode } = useTheme()
     return (
       <div className="space-y-2">
         <SectionTitle accentColor={groupColor}>{section.title}</SectionTitle>
@@ -23,12 +25,12 @@ const SectionAnalogy: React.FC<SectionRendererProps> = React.memo(
             <span className="mt-0.5 text-lg">💡</span>
             <div>
               {section.body && (
-                <p className="text-sm leading-relaxed text-zinc-300">{section.body}</p>
+                <p className="text-sm leading-relaxed" style={{ color: mode === 'dark' ? '#D4D4D8' : '#3F3F46' }}>{section.body}</p>
               )}
               {section.items && section.items.length > 0 && (
                 <ul className="mt-3 space-y-1.5">
                   {section.items.map((item, i) => (
-                    <li key={i} className="flex items-start gap-2 text-sm text-zinc-400">
+                    <li key={i} className="flex items-start gap-2 text-sm" style={{ color: mode === 'dark' ? '#A1A1AA' : '#52525B' }}>
                       <span
                         className="mt-1.5 block h-1.5 w-1.5 shrink-0 rounded-full"
                         style={{ backgroundColor: groupColor }}

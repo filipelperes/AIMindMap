@@ -1,65 +1,61 @@
-import React, { useState, useEffect } from 'react'
-import { motion } from 'framer-motion'
-import { useTheme } from '../../store/ThemeContext'
-import ParticleBackground from '../organisms/ParticleBackground'
-import LazyGraphScene from '../organisms/LazyGraphScene'
-import HeroOverlay from '../organisms/HeroOverlay'
-import DetailPanel from '../organisms/DetailPanel'
-import type { MindMapNode, GraphData } from '../../types/mindmap'
+import React, { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import ParticleBackground from "../organisms/ParticleBackground";
+import LazyGraphScene from "../organisms/LazyGraphScene";
+import HeroOverlay from "../organisms/HeroOverlay";
+import DetailPanel from "../organisms/DetailPanel";
+import type { MindMapNode, GraphData } from "../../types/mindmap";
 
 interface MainLayoutProps {
-  data: GraphData
-  selectedNodeId: string | null
-  selectedNode: MindMapNode | null
-  onSelect: (id: string | null) => void
-  onClose: () => void
-  isMobile: boolean
+  data: GraphData;
+  selectedNodeId: string | null;
+  selectedNode: MindMapNode | null;
+  onSelect: (id: string | null) => void;
+  onClose: () => void;
+  isMobile: boolean;
 }
 
 /**
- * Template: layout principal com tema dinâmico (dark/light).
- * 
- * Camadas:
- * 1. ParticleBackground (fundo dinâmico)
- * 2. GraphScene (moléculas 3D - lazy loaded)
- * 3. HeroOverlay (título, quando sem seleção)
- * 4. DetailPanel (conteúdo expandido, quando com seleção)
- * 
- * NOTA: O layout considera a sidebar de 256px à esquerda
- * (65rem) para centralizar o grafo corretamente.
+ * Template: layout principal com fundo animado de partículas 3D.
+ *
+ * Camadas (z-index):
+ *  0 — ParticleBackground (fundo animado principal)
+ * 10 — GraphScene (moléculas 3D com fundo transparente)
+ * 40 — HeroOverlay (título + subtítulo)
+ * 50 — DetailPanel
  */
 const MainLayout: React.FC<MainLayoutProps> = React.memo(
   ({ data, selectedNodeId, selectedNode, onSelect, onClose, isMobile }) => {
-    const { colors } = useTheme()
-    const [mounted, setMounted] = useState(false)
+    const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
-      setMounted(true)
-    }, [])
+      setMounted(true);
+    }, []);
 
     return (
       <div
         className="relative h-screen w-screen overflow-hidden"
         style={{
-          background: colors.bgGradient,
-          paddingLeft: isMobile ? 0 : '16rem', // Espaço para sidebar (256px)
+          paddingLeft: isMobile ? 0 : "16rem",
           opacity: mounted ? 1 : 0,
-          transition: 'opacity 1.2s ease-in-out',
+          transition: "opacity 1.2s ease-in-out",
         }}
       >
-        {/* Camada 1: Fundo de partículas */}
-        <ParticleBackground opacity={0.35} />
+        {/* Camada 0: Fundo animado de partículas — fundo PRINCIPAL */}
+        <div className="absolute inset-0 z-0">
+          <ParticleBackground opacity={0.7} dense />
+        </div>
 
-        {/* Camada 2: Grafo 3D */}
+        {/* Camada 10: Grafo 3D com fundo transparente */}
         <motion.div
           data-tour="graph"
           animate={{
             scale: selectedNode ? 1.0 : 1,
-            filter: selectedNode ? 'brightness(1.05)' : 'brightness(1)',
+            filter: selectedNode ? "brightness(1.05)" : "brightness(1)",
           }}
           transition={{ duration: 1.2 }}
-          className="absolute inset-0"
-          style={{ left: isMobile ? 0 : '16rem' }}
+          className="absolute inset-0 z-10"
+          style={{ left: isMobile ? 0 : "16rem" }}
         >
           <LazyGraphScene
             data={data}
@@ -68,19 +64,19 @@ const MainLayout: React.FC<MainLayoutProps> = React.memo(
           />
         </motion.div>
 
-        {/* Camada 3: Título (apenas quando sem seleção) */}
+        {/* Camada 40: Título (apenas quando sem seleção) */}
         {!selectedNode && <HeroOverlay isMobile={isMobile} />}
 
-        {/* Camada 4: Painel de detalhes (apenas quando com seleção) */}
+        {/* Camada 50: Painel de detalhes (apenas quando com seleção) */}
         <DetailPanel
           node={selectedNode}
           onClose={onClose}
           isMobile={isMobile}
         />
       </div>
-    )
+    );
   },
-)
+);
 
-MainLayout.displayName = 'MainLayout'
-export default MainLayout
+MainLayout.displayName = "MainLayout";
+export default MainLayout;

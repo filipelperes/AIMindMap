@@ -2,7 +2,8 @@ import React, { useRef, useState, useCallback, useEffect, useMemo } from 'react'
 import ForceGraph3D from 'react-force-graph-3d'
 import * as THREE from 'three'
 import { useTheme } from '../../store/ThemeContext'
-import { getGroupColor, THEME } from '../../constants/colors'
+import { getGroupColor } from '../../constants/colors'
+import { getGroupPaletteForTheme } from '../../constants/theme'
 import { getSphereGeometry, getLabelTexture } from '../../utils/threeHelpers'
 import type { MindMapNode, GraphData, GroupPalette } from '../../types/mindmap'
 
@@ -37,7 +38,7 @@ function getWobbleData(id: string) {
       freqX: 0.05 + Math.random() * 0.12,
       freqY: 0.04 + Math.random() * 0.15,
       freqZ: 0.06 + Math.random() * 0.10,
-      amp: 0.5 + Math.random() * 1.5,
+      amp: 0.8 + Math.random() * 2.5,
     })
   }
   return wobbleData.get(id)!
@@ -151,6 +152,9 @@ const GraphScene: React.FC<GraphSceneProps> = React.memo(
                 const speed = (node as any).spinSpeed ?? 0.1
                 obj.rotation.y += speed * delta
                 obj.rotation.x += speed * 0.3 * delta
+                // Tilt wobble: subtle Z oscillation (~3°) so the molecule tilts as it floats
+                const wobble = getWobbleData(id)
+                obj.rotation.z = Math.sin(t * wobble.freqZ * 0.6 + wobble.phaseZ) * 0.05
               }
 
               // ── 2. Organic wobble (noise-like sine with per-axis frequencies) ──
@@ -185,11 +189,19 @@ const GraphScene: React.FC<GraphSceneProps> = React.memo(
                 obj.scale.set(breathe, breathe, breathe)
               }
 
-              // ── 6. Sprite vertical bobbing ──
+              // ── 6. Sprite independent floating (bobs + drifts separately from sphere) ──
               if (obj.userData.spriteBaseY !== undefined && obj.userData.spriteRef) {
                 const sprite = obj.userData.spriteRef as THREE.Sprite
                 const wobble = getWobbleData(id)
                 sprite.position.y = obj.userData.spriteBaseY + Math.sin(t * 0.8 + wobble.phaseX) * 1.5
+                // Horizontal drift — the sprite "floats" on its own path
+                sprite.position.x = Math.sin(t * 0.5 + wobble.phaseY) * 1.2
+                sprite.position.z = Math.cos(t * 0.6 + wobble.phaseZ + 1.0) * 1.0
+                // Subtle scale pulse to feel alive and disconnected from sphere motion
+                const baseScale = obj.userData.spriteScale ?? sprite.scale.x
+                const sPulse = 1 + Math.sin(t * 1.1 + wobble.phaseX) * 0.025
+                sprite.scale.x = baseScale * sPulse
+                sprite.scale.y = baseScale * 0.35 * sPulse
               }
 
               // ── 7. Sparkle particles orbit animation ──
@@ -256,12 +268,10 @@ const GraphScene: React.FC<GraphSceneProps> = React.memo(
     const handleZoomIn = useCallback(() => {
       const cam = fgRef.current?.camera()
       if (!cam) return
-      const dir = new THREE.Vector3()
-      cam.getWorldDirection(dir)
-      const targetPos = cam.position.clone().add(dir.multiplyScalar(-15))
+      const p = cam.position
       fgRef.current.cameraPosition(
-        { x: targetPos.x, y: targetPos.y, z: targetPos.z },
-        undefined,
+        { x: p.x * 0.8, y: p.y * 0.8, z: p.z * 0.8 },
+        { x: 0, y: 0, z: 0 },
         400,
       )
     }, [])
@@ -269,12 +279,10 @@ const GraphScene: React.FC<GraphSceneProps> = React.memo(
     const handleZoomOut = useCallback(() => {
       const cam = fgRef.current?.camera()
       if (!cam) return
-      const dir = new THREE.Vector3()
-      cam.getWorldDirection(dir)
-      const targetPos = cam.position.clone().add(dir.multiplyScalar(15))
+      const p = cam.position
       fgRef.current.cameraPosition(
-        { x: targetPos.x, y: targetPos.y, z: targetPos.z },
-        undefined,
+        { x: p.x * 1.25, y: p.y * 1.25, z: p.z * 1.25 },
+        { x: 0, y: 0, z: 0 },
         400,
       )
     }, [])
@@ -316,11 +324,19 @@ const GraphScene: React.FC<GraphSceneProps> = React.memo(
       [selectedNodeId],
     )
 
+    // ─── BACKGROUND CLICK (deselect when clicking empty space) ───
+    const handleBackgroundClick = useCallback(() => {
+      if (selectedNodeId !== null) {
+        onSelect(null)
+      }
+    }, [selectedNodeId, onSelect])
+
     // ─── CUSTOM NODE: ESFERA 3D + LABEL + ORBIT RINGS + SPARKLES ───
     const nodeThreeObject = useCallback(
       (node: any) => {
         const mNode = node as MindMapNode
         const palette: GroupPalette = getGroupColor(mNode.group)
+        const themePalette = getGroupPaletteForTheme(mNode.group, mode)
         const isSelected = mNode.id === selectedNodeId
         const isHovered = mNode.id === hoveredNodeId
 
@@ -358,43 +374,47 @@ const GraphScene: React.FC<GraphSceneProps> = React.memo(
         const titleY = 180
 
         // Layered shadows for 3D depth on the title text
+        const baseColor = mode === 'light' ? themePalette.base : palette.base
+        const emissiveColor = mode === 'light' ? themePalette.emissive : palette.emissive
+        const accentColor = mode === 'light' ? themePalette.accent : palette.accent
+
         // 1. Deep shadow layer (offset for 3D emboss effect)
         lctx.shadowColor = 'rgba(0,0,0,0.8)'
         lctx.shadowBlur = 30
         lctx.shadowOffsetX = 3
         lctx.shadowOffsetY = 3
         lctx.font = `bold ${fontSize}px Inter, system-ui, sans-serif`
-        lctx.fillStyle = palette.base
+        lctx.fillStyle = baseColor
         lctx.fillText(mNode.id, titleX, titleY)
 
         // 2. Glow layer
-        lctx.shadowColor = palette.emissive
+        lctx.shadowColor = emissiveColor
         lctx.shadowBlur = 25
         lctx.shadowOffsetX = 0
         lctx.shadowOffsetY = 0
-        lctx.fillStyle = palette.accent
+        lctx.fillStyle = accentColor
         lctx.fillText(mNode.id, titleX, titleY)
 
-        // 3. Main white text (clean on top)
+        // 3. Main text (clean on top — white in dark mode, dark in light mode)
         lctx.shadowBlur = 0
-        lctx.fillStyle = '#FFFFFF'
+        lctx.fillStyle = mode === 'light' ? '#1A1A2E' : '#FFFFFF'
         lctx.fillText(mNode.id, titleX, titleY)
 
         // 4. Subtle accent offset for extra depth
         lctx.globalAlpha = 0.25
-        lctx.fillStyle = palette.accent
+        lctx.fillStyle = accentColor
         lctx.fillText(mNode.id, titleX + 1.5, titleY + 1.5)
         lctx.globalAlpha = 1.0
 
         // Subtítulo
         lctx.font = `${Math.floor(fontSize * 0.35)}px Inter, sans-serif`
-        lctx.fillStyle = 'rgba(255,255,255,0.5)'
+        lctx.fillStyle = mode === 'light' ? accentColor : 'rgba(255,255,255,0.5)'
         lctx.fillText(palette.label, 256, 250)
 
         // Descrição
         if (mNode.description) {
           lctx.font = `${Math.floor(fontSize * 0.22)}px Inter, sans-serif`
-          lctx.fillStyle = 'rgba(255,255,255,0.3)'
+          lctx.fillStyle = mode === 'light' ? 'rgba(0,0,0,0.4)' : 'rgba(255,255,255,0.3)'
           const desc = mNode.description.length > 40
             ? mNode.description.slice(0, 40) + '…'
             : mNode.description
@@ -406,10 +426,10 @@ const GraphScene: React.FC<GraphSceneProps> = React.memo(
           const step = (mNode as any).learningStep
           lctx.beginPath()
           lctx.arc(256, 380, 22, 0, Math.PI * 2)
-          lctx.fillStyle = palette.base
+          lctx.fillStyle = baseColor
           lctx.fill()
           lctx.font = `bold 22px Inter, sans-serif`
-          lctx.fillStyle = '#FFFFFF'
+          lctx.fillStyle = mode === 'light' ? '#1A1A2E' : '#FFFFFF'
           lctx.textAlign = 'center'
           lctx.textBaseline = 'middle'
           lctx.fillText(`${step}`, 256, 382)
@@ -420,9 +440,9 @@ const GraphScene: React.FC<GraphSceneProps> = React.memo(
 
         const material = new THREE.MeshStandardMaterial({
           map: texture,
-          color: new THREE.Color(palette.base),
-          emissive: new THREE.Color(palette.emissive),
-          emissiveIntensity: isSelected ? 3.5 : 2,
+          color: new THREE.Color(mode === 'light' ? themePalette.base : palette.base),
+          emissive: new THREE.Color(mode === 'light' ? themePalette.emissive : palette.emissive),
+          emissiveIntensity: mode === 'light' ? (isSelected ? 1.5 : 0.6) : (isSelected ? 3.5 : 2),
           emissiveMap: texture,
           metalness: 0.15,
           roughness: 0.25,
@@ -435,10 +455,11 @@ const GraphScene: React.FC<GraphSceneProps> = React.memo(
         // ── 2. SPRITE FLUTUANTE (TÍTULO FORA DA ESFERA — sempre facing camera) ──
         const spriteTexture = getLabelTexture({
           text: mNode.id,
-          color: palette.accent,
+          color: mode === 'light' ? themePalette.accent : palette.accent,
           fontSize: 42,
-          glowColor: palette.emissive,
+          glowColor: mode === 'light' ? themePalette.emissive : palette.emissive,
           glowSize: 10,
+          textColor: mode === 'light' ? '#1A1A2E' : '#FFFFFF',
         })
 
         const spriteMat = new THREE.SpriteMaterial({
@@ -454,9 +475,10 @@ const GraphScene: React.FC<GraphSceneProps> = React.memo(
         sprite.scale.set(spriteScale, spriteScale * 0.35, 1)
         group.add(sprite)
 
-        // Store sprite ref and base Y for vertical bobbing animation
+        // Store sprite ref and params for floating animation
         group.userData.spriteRef = sprite
         group.userData.spriteBaseY = spriteBaseY
+        group.userData.spriteScale = spriteScale
 
         // ── 3. GLOW RING (selected) ──
         if (isSelected) {
@@ -526,7 +548,7 @@ const GraphScene: React.FC<GraphSceneProps> = React.memo(
 
         return group
       },
-      [selectedNodeId, hoveredNodeId],
+      [selectedNodeId, hoveredNodeId, mode],
     )
 
     // ─── LINK RENDERING ───
@@ -540,8 +562,8 @@ const GraphScene: React.FC<GraphSceneProps> = React.memo(
           src?.id === hoveredNodeId ||
           tgt?.id === hoveredNodeId
         return hl
-          ? (mode === 'dark' ? '#ffffff' : '#333333')
-          : (mode === 'dark' ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.08)')
+          ? (mode === 'dark' ? '#ffffff' : '#6D28D9')
+          : (mode === 'dark' ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.12)')
       },
       [selectedNodeId, hoveredNodeId, mode],
     )
@@ -565,8 +587,8 @@ const GraphScene: React.FC<GraphSceneProps> = React.memo(
     // arrasto (inércia), sem gravidade, com drift orgânico.
     const physicsConfig = useMemo(() => ({
       d3Gravity: 0,              // Gravidade zero → espaço sideral
-      d3AlphaDecay: 0.0008,      // Decaimento ultra-lento → momentum prolongado
-      d3VelocityDecay: 0.001,    // Quase sem atrito → arrasto contínuo
+      d3AlphaDecay: 0.0005,      // Decaimento super-lento → ainda mais momentum
+      d3VelocityDecay: 0.0005,   // Ainda menos atrito → inércia prolongada
       d3AlphaMin: 0.0001,        // Mínimo extremamente baixo → movimento perpétuo
       warmupTicks: 500,          // Mais ticks para dispersão inicial
       cooldownTicks: 0,          // Sem cooldown → nunca para
@@ -584,14 +606,29 @@ const GraphScene: React.FC<GraphSceneProps> = React.memo(
       return () => window.removeEventListener('keydown', handleKey)
     }, [handleZoomIn, handleZoomOut, resetCamera])
 
-    const bgColor = mode === 'dark' ? THEME.background : '#F0F4FF'
+    // ─── TORNAR FUNDO DO THREE.JS TRANSPARENTE ───
+    useEffect(() => {
+      const timer = setTimeout(() => {
+        try {
+          const renderer = fgRef.current?.renderer?.()
+          if (renderer) {
+            renderer.setClearColor(0x000000, 0)
+          }
+          const scene = fgRef.current?.scene?.()
+          if (scene) {
+            scene.background = null
+          }
+        } catch {}
+      }, 50)
+      return () => clearTimeout(timer)
+    }, [])
 
     return (
-      <div className="absolute inset-0">
+      <div className="absolute inset-0 touch-manipulation">
         <ForceGraph3D
           ref={fgRef}
           graphData={data}
-          backgroundColor={bgColor}
+          backgroundColor="rgba(0,0,0,0)"
           linkOpacity={0.5}
           linkWidth={linkWidthFn}
           linkColor={linkColorFn}
@@ -599,6 +636,7 @@ const GraphScene: React.FC<GraphSceneProps> = React.memo(
           nodeLabel=""
           onNodeClick={handleNodeClick}
           onNodeHover={handleNodeHover}
+          onBackgroundClick={handleBackgroundClick}
           nodeThreeObject={nodeThreeObject}
           {...physicsConfig}
         />
@@ -617,14 +655,15 @@ const GraphScene: React.FC<GraphSceneProps> = React.memo(
               <button
                 onClick={btn.action}
                 aria-label={btn.label}
-                className="flex h-10 w-10 items-center justify-center rounded-full backdrop-blur-md border transition-all hover:scale-110 active:scale-95 cursor-pointer"
+                className="flex h-12 w-12 items-center justify-center rounded-full backdrop-blur-md border transition-all hover:scale-110 active:scale-95 cursor-pointer"
                 style={{
                   backgroundColor: mode === 'dark' ? 'rgba(0,0,0,0.5)' : 'rgba(255,255,255,0.7)',
                   borderColor: mode === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
                   color: mode === 'dark' ? '#ffffff' : '#1A1A2E',
+                  touchAction: 'manipulation',
                 }}
               >
-                <svg width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+                <svg width="22" height="22" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
                   {btn.icon.split('M').slice(1).map((path, i) => (
                     <path key={i} d={`M${path.trim()}`} />
                   ))}
@@ -667,8 +706,8 @@ const GraphScene: React.FC<GraphSceneProps> = React.memo(
           }}
         >
           {selectedNodeId
-            ? `🔍 ${selectedNodeId}`
-            : '🌌 Explore — clique em uma molécula ou use ← → no menu'}
+            ? `${selectedNodeId}`
+            : 'Explore — clique em uma molécula ou use ← → no menu'}
         </div>
       </div>
     )

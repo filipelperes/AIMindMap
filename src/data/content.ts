@@ -179,6 +179,19 @@ for token, id in zip(tokens, ids):
         title: 'Provedores de LLM: Comparação',
         type: 'overview',
         body: 'Cada provedor de LLM oferece diferentes trade-offs. OpenAI (GPT-4o, GPT-4o-mini): melhor qualidade geral, ecossistema maduro, mas mais caro e com rate limits restritivos. Anthropic (Claude 3.5 Sonnet, Haiku): excelente para código e análise, contexto de 200K tokens, política de segurança robusta. Google (Gemini 1.5 Pro, Flash): contexto de 1M tokens, integração com GCP, preço competitivo. Open-source (Llama 3, Mistral, Qwen): auto-hospedado, sem limites de taxa, privacidade total, mas requer infraestrutura de GPU. Para produção, uma estratégia comum é usar múltiplos provedores: modelo caro para tarefas complexas (raciocínio, análise), modelo barato para tarefas simples (sumarização, extração), e open-source como fallback econômico.'
+      },
+      {
+        title: 'Cenário Real: Deploy com Múltiplos Provedores de LLM',
+        type: 'everyday-scenario',
+        body: 'Sua startup de SaaS já processa 500 mil requisições de LLM por dia usando apenas a API da OpenAI. O serviço funciona — até que a OpenAI sofre uma interrupção de 4 horas durante horário comercial. Milhares de usuários ficam sem resposta. Você precisa projetar uma arquitetura multi-provedor que distribua requisições entre OpenAI, Anthropic e Google, com roteamento inteligente, failover automático e otimização de custos.',
+        items: [
+          'Implemente um LLM Gateway (Portkey/Helicone) como proxy único — abstrai diferenças de API entre provedores e unifica logs, métricas e caching',
+          'Configure health checks por provedor: cada provedor tem endpoint de health verificado a cada 30s — se falhar 3x seguidas, provedor é marcado como degradado',
+          'Implemente weighted random routing com fallback: 70% OpenAI, 25% Anthropic, 5% Google — se um cair, os outros absorvem com rebalanceamento em tempo real',
+          'Adicione cache semântico como primeira linha de defesa: 35% das queries são semanticamente idênticas a anteriores — cache Redis reduz carga e isola de falhas',
+          'Monitore drift de qualidade entre provedores: mesma pergunta pode ter respostas de qualidade diferente em cada LLM — use LLM-as-a-judge para comparar e ajustar pesos dinamicamente',
+          'Implemente circuit breaker com degradação gradual: se latência P95 exceder 10s por mais de 2 min, reduza peso do provedor para 10% e distribua entre os outros'
+        ]
       }
     ]
   },
@@ -299,6 +312,19 @@ response = client.chat.completions.create(
         title: 'Padrões Avançados de Prompt',
         type: 'how-it-works',
         body: 'Além das técnicas básicas, existem padrões avançados que resolvem problemas específicos. (1) Chain-of-Density: comece com um resumo genérico e peça ao LLM para torná-lo mais denso em informação a cada iteração — ideal para sumarização progressiva. (2) Step-Back Prompting: antes de responder, peça ao LLM para "dar um passo atrás" e pensar em princípios mais gerais — melhora raciocínio em problemas específicos. (3) Emotional Prompting: "isso é muito importante para minha carreira" ou "tire um tempo para pensar cuidadosamente" — estudos mostram que apelos emocionais e instruções de "pensar" melhoram resultados em 10-30%. (4) Persona Stacking: combine múltiplas personas em camadas: "Você é um professor de física explicando para um aluno do ensino médio" + "Use analogias do dia a dia" + "Termine com uma pergunta para verificar o entendimento". (5) Negative Prompting: em vez de só dizer o que fazer, diga também o que NÃO fazer — "Não invente fatos. Não use jargão técnico. Não responda se não tiver certeza." (6) XML Prompting: estruture prompts complexos com tags XML — <context>, <instruction>, <examples>, <output_format>. LLMs entendem XML naturalmente e isso melhora a consistência em tarefas multi-etapa.'
+      },
+      {
+        title: 'Cenário Real: Sistema de Classificação de Tickets com Chain-of-Thought',
+        type: 'everyday-scenario',
+        body: 'Seu time de suporte recebe 2.000 tickets por dia e quer usar IA para classificar automaticamente cada ticket em categorias (bug, feature request, dúvida, reclamação) com confiança >95%. Prompt simples de zero-shot classifica apenas 72% corretamente. Usando chain-of-thought com etapas explícitas de raciocínio, você alcança 96% de acurácia — e descobre que o segredo está em estruturar o raciocínio do modelo, não apenas pedir a resposta final.',
+        items: [
+          'Prompt zero-shot: "Classifique o ticket abaixo em: bug, feature, duvida, reclamacao." → 72% acurácia — modelo confunde "bug" com "feature request" quando o tom é sugestivo',
+          'Prompt CoT simples: "Pense passo a passo e classifique." → 81% — ajuda, mas o raciocínio é vago e inconsistente entre tickets similares',
+          'Prompt CoT estruturado: "1) Leia o ticket, 2) Identifique se há erro/exception (bug), 3) Identifique se pede funcionalidade nova (feature), 4) Identifique se pergunta como fazer (duvida), 5) Identifique se expressa insatisfação (reclamacao), 6) Responda APENAS a categoria." → 92%',
+          'Adicione few-shot com 3 exemplos por categoria (total 12): cada exemplo mostra o raciocínio CoT completo + resposta final → 96% acurácia',
+          'Implemente validação pós-classificação: se a confiança do modelo (probabilidade do token de resposta) for <0.9, o ticket vai para revisão humana — catching os 4% restantes',
+          'Monitore drift semanalmente: a distribuição de categorias muda com o tempo — re-calibre os exemplos few-shot a cada mês para manter a acurácia acima de 95%'
+        ]
       }
     ]
   },
@@ -471,6 +497,19 @@ for hit in search_result:
           '❌ Fixed-size: simples mas perde contexto semântico — evite para produção',
           '⚠️ Semântico: excelente qualidade, custo alto de indexação',
           '⚠️ Agentic: melhor qualidade, mas caro e lento — use apenas para documentos críticos'
+        ]
+      },
+      {
+        title: 'Cenário Real: RAG para Documentação Técnica com Código Fonte',
+        type: 'everyday-scenario',
+        body: 'Sua equipe de plataforma mantém 15 microsserviços com documentação espalhada entre READMEs, wikis internos e comentários de código. Os desenvolvedores gastam horas procurando "como usar a biblioteca X" ou "qual o padrão para implementar Y". Um RAG sobre toda a documentação técnica e código-fonte resolveria isso — mas documentação de código tem desafios únicos: trechos de código precisam ser chunkados sem quebrar a sintaxe, e a busca precisa entender tanto linguagem natural quanto termos técnicos.',
+        items: [
+          'Desafio 1 — chunking de código: chunk size fixo quebra funções no meio. Solução: use chunking semântico que detecta boundaries de função/classe (regex por "def ", "class ", "function ", "---") e nunca quebra dentro de um bloco de código',
+          'Desafio 2 — busca híbrida para código: "como autenticar no serviço X" (semântica) vs "auth_service.login()" (lexical). Solução: hybrid search com alpha dinâmico — aumenta peso do BM25 quando a query contém camelCase, snake_case ou pontos (indicadores de código)',
+          'Desafio 3 — contexto insuficiente: um chunk de 512 tokens de uma função não mostra imports, dependências e documentação da classe. Solução: parent-child chunking — busca nos chunks de função (256 tokens), passa o arquivo completo (até 4K tokens) como contexto para o LLM',
+          'Desafio 4 — código desatualizado: a documentação RAG retorna código da versão antiga. Solução: adicione metadata de versão/sha do git a cada chunk, e filtre por branch/versão na busca',
+          'Implemente "explain this code" como feature matadora: desenvolvedor seleciona um trecho de código e o RAG explica o que faz, cita a documentação relacionada e sugere melhorias — usa o código selecionado + chunks relacionados como contexto',
+          'Resultado: redução de 40% no tempo de onboarding de novos devs, 60% menos perguntas no Slack sobre "como funciona X?", e documentação sempre atualizada porque o RAG indexa o código real, não documentação estagnada'
         ]
       }
     ]
@@ -679,6 +718,19 @@ trainer = SFTTrainer(
 trainer.train()`
         },
         body: 'Dataset sintético gerado por LLM reduz custo de anotação humana em 90%. Use um modelo grande (teacher) para gerar dados e fine-tune um modelo menor (student) — técnica chamada distillation fine-tuning.'
+      },
+      {
+        title: 'Cenário Real: Alinhamento de Modelo com DPO para Chatbot de E-commerce',
+        type: 'everyday-scenario',
+        body: 'Sua equipe fine-tunou um Llama 3.2 8B para ser um assistente de e-commerce. O modelo sabe os produtos e políticas, mas frequentemente dá respostas muito longas, ignora o carrinho atual do usuário e, pior, ocasionalmente sugere produtos mais caros mesmo quando o usuário pede "o mais barato". Você decide usar DPO (Direct Preference Optimization) para alinhar o comportamento do modelo com o que os clientes realmente querem: respostas concisas, relevantes ao contexto e imparciais.',
+        items: [
+          'Colete 2.000 pares de preferência (chosen/rejected) de logs reais: para cada prompt, duas respostas do modelo — a que o usuário avaliou positivamente (chosen) e a que avaliou negativamente ou ignorou (rejected)',
+          'Categorize os critérios de preferência: concisão (<100 tokens), relevância ao contexto (menciona o carrinho?), imparcialidade (não favorece produto caro), tom (educado, não insistente) — cada par é anotado com o critério que motivou a escolha',
+          'Configure DPO com beta=0.15 (equilíbrio entre alinhamento e capacidade geral) e learning rate=3e-6 — valores testados em 5 experimentos com 100 exemplos de validação cada',
+          'Valide com um conjunto de 200 prompts de teste: meça taxa de concisão (respostas <100 tokens), taxa de relevância (menciona contexto), taxa de recomendação justa (não favorece produto caro) — todas devem melhorar >15% vs baseline',
+          'Resultados reais: concisão subiu de 45% para 82%, relevância ao contexto de 38% para 79%, recomendações justas de 62% para 91% — e a satisfação do usuário (feedback thumbs up) aumentou de 3.2 para 4.1 estrelas',
+          'Monitore alinhamento continuamente: a cada semana, compute as mesmas métricas nos logs da semana — se alguma métrica cair >5%, re-treine com novos pares de preferência coletados no período'
+        ]
       }
     ]
   },
@@ -874,6 +926,19 @@ def agent_with_reflection(task: str, max_attempts=3):
         title: 'Arquitetura de Agente de Code Review',
         type: 'architecture',
         body: 'A arquitetura de um code review agent envolve: (1) Webhook do GitHub escuta eventos de PR, (2) Trigger dispara o agente principal, (3) O agente usa ReAct para analisar o PR: primeiro lê o diff completo, depois verifica arquivos modificados um a um, executa lint nos arquivos alterados, busca por padrões de segurança (SQL injection, XSS, secrets vazados), verifica cobertura de testes, e analisa a descrição do PR. (4) O agente compila um relatório estruturado com: resumo das mudanças, problemas encontrados (categorizados por severidade), sugestões de melhoria, e perguntas para o autor. (5) O relatório é postado como comentário no PR. (6) Se encontrar critical issues, o agente também notifica no Slack e bloqueia o merge via status check. Tudo isso em menos de 2 minutos para um PR médio.'
+      },
+      {
+        title: 'Cenário Real: Agente Multi-Ferramenta para Análise de Dados',
+        type: 'everyday-scenario',
+        body: 'O time de dados recebe 50 solicitações por semana de análise ad-hoc: "qual a taxa de conversão por região?", "como está o churn este mês?" Cada solicitação leva um analista de 2 a 8 horas para responder. Você constrói um agente de IA que tem acesso ao banco de dados SQL, à API de métricas de negócio e ao Slack — e responde perguntas de dados em minutos, não horas. O agente precisa entender a pergunta em português, consultar as fontes certas, executar queries, interpretar resultados e gerar uma resposta em linguagem natural.',
+        items: [
+          'Configure 4 ferramentas para o agente: (1) query_database(sql_query) → executa SQL no warehouse e retorna DataFrame, (2) get_metric(metric_name, period) → busca métrica pré-calculada, (3) list_tables() → lista tabelas disponíveis com descrição, (4) send_slack(channel, message) → envia resultado para o Slack',
+          'O agente recebe: "Qual a taxa de conversão por região no último trimestre?" e executa: Thought ("preciso saber quais tabelas têm dados de conversão") → Action (list_tables) → Observation ("tabela `conversions` com colunas region, date, value") → Thought ("vou agregar por região no último trimestre") → Action (query_database) → Observation (dados) → Final Answer',
+          'Desafio: o agente gera SQL com sintaxe errada. Solução: adicione um passo de "auto-correção SQL" — se a query falhar, o agente lê o erro, ajusta a sintaxe e re-tenta (até 3x). Reduziu taxa de erro de 35% para 8%',
+          'Implemente validação de resultados: após executar a query, o agente deve verificar se o resultado faz sentido (ex: totais >0, proporções entre 0-1) — se algo parecer errado, ele re-executa com uma query diferente',
+          'Adicione "modo explicativo": antes de mostrar números, o agente explica o que fez ("Busquei a tabela de conversões, agrupei por região, filtrei os últimos 3 meses e calculei a média") — aumenta confiança do usuário e facilita debugging',
+          'Resultado: 70% das solicitações são respondidas em <5 min sem intervenção humana. Os 30% restantes (perguntas muito complexas ou ambíguas) são escaladas para analistas, que agora focam em análises profundas em vez de queries simples'
+        ]
       }
     ]
   },
@@ -958,6 +1023,19 @@ def agent_with_reflection(task: str, max_attempts=3):
           'SLA tiers: tenants diferentes podem ter SLAs diferentes (P95 latência <2s para Premium, <5s para Basic)',
           'Tenant isolation testing: testes automatizados que verificam se dados do Tenant A são inacessíveis ao Tenant B',
           'Noisy neighbor mitigation: isole tenants de alto throughput em recursos dedicados (sharding)'
+        ]
+      },
+      {
+        title: 'Cenário Real: Redesign de Arquitetura Após Colapso de Custos',
+        type: 'everyday-scenario',
+        body: 'Sua plataforma de IA foi lançada com sucesso — os usuários amam, mas o CFO está em pânico. O custo de API de LLM disparou de $5K para $45K/mês em 3 meses. Cada requisição usa GPT-4, sem cache, sem distinção entre queries simples e complexas. Você precisa redesenhar a arquitetura para cortar custos sem sacrificar a experiência do usuário. A solução combina caching agressivo, model routing inteligente e otimização de prompts.',
+        items: [
+          'Diagnóstico: 80% das requisições são queries simples (sumarização, extração, classificação) que um modelo menor resolveria — mas 100% vão para GPT-4. 40% são semanticamente idênticas a requisições anteriores — sem cache, cada uma paga do zero',
+          'Implemente um classifier router: um modelo leve (classificador baseado em embeddings) categoriza cada query como "simples" ou "complexa" em <5ms. Simples → GPT-4o-mini ($0.15/M tokens), Complexa → GPT-4o ($2.50/M tokens). Economia imediata: 65%',
+          'Adicione cache semântico com Redis + embeddings: queries com similaridade >0.93 retornam resposta cacheada. TTL de 24h para dados estáveis, 1h para dados voláteis. 40% das queries são servidas pelo cache — economia adicional de 40% sobre o custo restante',
+          'Comprima histórico de conversas: em vez de enviar o histórico completo (crescendo sem limites), envie apenas as últimas 3 interações + sumarização do restante. Reduz tokens de input em 50-70%',
+          'Implemente fine-tuning de um modelo menor (Llama 3.2 8B) para as 5 tarefas mais comuns — queries que antes iam para GPT-4 agora vão para o modelo local, custo próximo de zero',
+          'Resultado final: custo cai de $45K para $6K/mês (87% de redução) com P95 de latência <2s. O CFO agora pergunta "podemos gastar mais em IA?" em vez de "por que está tão caro?"'
         ]
       }
     ]
@@ -1054,6 +1132,19 @@ print(validated_output.validated_output)`
           'Custo de retry: $ desperdiçado em requisições que falharam e foram repetidas',
           'Efficiency ratio: tokens de output / tokens de input — ideal entre 0.3-0.5 para chatbots',
           'Drift de custo: comparação semana a semana do custo total com alerta para desvios >20%'
+        ]
+      },
+      {
+        title: 'Cenário Real: Implementando Guardrails em Produção do Zero',
+        type: 'everyday-scenario',
+        body: 'Seu chatbot de suporte ao cliente foi lançado há 3 meses e está indo bem — até que um usuário descobre que pode fazer o chatbot gerar um email de phishing convincente usando prompt injection. O CEO exige uma solução imediata. Você precisa implementar guardrails de input e output que bloqueiem ataques sem prejudicar usuarios legítimos. O desafio: encontrar o equilibrio entre segurança e usabilidade.',
+        items: [
+          'Camada 1 — Input Guard: implemente um detector de prompt injection (usando LLM-as-a-judge ou modelo especializado como ProtectAI) que classifica cada input do usuario como "safe" ou "attack" antes de processar. Se "attack", retorna resposta generica: "Nao posso processar esta solicitaçao"',
+          'Camada 2 — Output Guard: apos o LLM gerar a resposta, passe por um filtro de toxicidade (Detoxify) e detecçao de PII (presidio). Se detectar conteudo toxico, bloqueia a resposta e retorna fallback. Se detectar PII, mascara automaticamente',
+          'Camada 3 — Policy Guard: implemente um conjunto de regras de negocio: "nunca gere codigo executavel", "nunca imite uma pessoa real", "nunca revele o system prompt". Use um segundo LLM como "policy enforcer" que verifica a resposta contra essas regras',
+          'Problema: falsos positivos — 8% dos usuarios legitimos tiveram perguntas bloqueadas pelo input guard. Soluçao: calibre o threshold do detector com 500 exemplos reais de ataques e 2000 de perguntas legitimas, ajuste ate FPR <2%',
+          'Problema: performance — 3 camadas de guardrail adicionam 600ms de latencia. Soluçao: execute as 3 camadas em paralelo (nao em serie) e use modelos menores (MiniLM, BGE) para as camadas 1 e 2, reservando LLM apenas para a camada 3',
+          'Resultado: 99.2% dos ataques bloqueados, 1.8% de falsos positivos (e destes, 70% sao recuperados por um segundo prompt que pergunta "voce quer dizer X?"), latencia adicional de apenas 180ms com execuçao paralela'
         ]
       }
     ]
@@ -1163,6 +1254,19 @@ results = client.search(
           '🔹 Milvus: escala máxima (bilhões de vetores), mas complexo — escolha quando nada mais escala',
           '🔹 Chroma: zero-config, embedded — escolha para desenvolvimento e testes'
         ]
+      },
+      {
+        title: 'Cenário Real: Escolhendo o Embedding Model para um Sistema de Recomendação',
+        type: 'everyday-scenario',
+        body: 'Sua startup quer construir um sistema de recomendação de artigos técnicos: dado um artigo que o usuário está lendo, recomendar 5 artigos similares. Você testa 3 modelos de embedding: text-embedding-3-small (OpenAI), BGE-large (BAAI) e E5-mistral (Microsoft). Cada modelo tem trade-offs diferentes de qualidade, custo e latência. A escolha do embedding model determina se as recomendações serão precisas ou irrelevantes.',
+        items: [
+          'Setup do teste: pegue 10.000 artigos do seu corpus, embedde com cada modelo (1536d, 1024d, 4096d respectivamente), e para 100 artigos de teste, calcule os Top-5 similares. Avalie com 3 anotadores humanos: "a recomendação é relevante?" (1-5 Likert)',
+          'Resultados: text-embedding-3-small → score médio 3.8/5, custo $0.02/1000 artigos, latência 50ms. BGE-large → 4.1/5, custo $0 (self-host), latência 120ms (GPU). E5-mistral → 4.3/5, custo $0 (self-host), latência 200ms',
+          'Análise qualitativa: text-embedding-3-small recomenda artigos do mesmo tópico mas perde nuances (ex: "tutorial de React" vs "comparação React vs Vue" — ambos são "React" mas intenção diferente). BGE-large captura melhor a intenção. E5-mistral é melhor mas 2x mais lento',
+          'Decisão: escolha BGE-large como modelo principal (melhor custo-benefício) com Matryoshka embedding para flexibilidade — o mesmo embedding pode ser usado em 256d (rápido, 90% da qualidade) ou 1024d (completo, 100%) dependendo da carga do sistema',
+          'Implemente "embedding versioning": cada versão do embedding model tem um prefixo (bge-v1, bge-v2). Quando atualizar o modelo, re-embedde em background e troca a referência — sem downtime e com fallback para versão anterior se a nova for pior',
+          'Monitore qualidade continuamente: a cada semana, compute "平均相似度 dos Top-5" — se cair >5%, investigue (pode ser data drift). A cada mês, re-avalie com anotadores humanos para garantir que a qualidade se mantém'
+        ]
       }
     ]
   },
@@ -1227,6 +1331,19 @@ results = client.search(
         title: 'Arquitetura de Pipeline de Eval',
         type: 'architecture',
         body: 'Um pipeline de avaliação robusto tem 4 estágios: (1) Dataset — golden dataset com 200-1000 exemplos, balanceado por categoria e dificuldade; (2) Geração — o sistema candidato processa cada input do dataset; (3) Métricas automáticas — LLM-as-a-judge avalia cada resposta em múltiplas dimensões (faithfulness, relevance, safety, format compliance, consistency); (4) Report — um relatório comparativo entre baseline e candidato, com scores agregados, distribuição por categoria, e detecção de regressões. O pipeline roda em: cada push (eval completo em dataset reduzido de 100 exemplos), cada deploy (eval completo), e diariamente (eval com tráfego real amostrado). Resultados são armazenados no tempo para detectar drift.'
+      },
+      {
+        title: 'Cenário Real: Configurando Human Evaluation em Larga Escala',
+        type: 'everyday-scenario',
+        body: 'Seu golden dataset automático com LLM-as-a-judge está funcionando, mas o CTO quer validação humana antes de aprovar mudanças críticas no sistema de recomendação de tratamento médico. Você precisa configurar um programa de human evaluation com 5 anotadores médicos especialistas, calibragem entre anotadores e um pipeline que integra avaliação humana no CI/CD sem criar gargalos.',
+        items: [
+          'Recrute 5 anotadores médicos especialistas. Cada um avalia 100 exemplos/semana em 4 dimensões: acurácia clínica (1-5), segurança (passa/falha), clareza (1-5), completude (1-5)',
+          'Calibragem: cada anotador avalia o mesmo conjunto de 20 exemplos. Calcule Cohen Kappa entre cada par — se <0.7, discuta divergências e re-calibre até todos terem Kappa >0.75',
+          'Pipeline de integração: quando testes automáticos passam, 50 exemplos vão para avaliação humana. Mudança aprovada só se: score humano >4.0, nenhum "falha" em segurança, score não inferior à versão atual (p<0.05)',
+          'Stratified sampling: 40% casos fáceis (regressões), 30% casos limite (robustez), 20% casos novos (drift), 10% golden repeats (consistência do anotador)',
+          'Auto-detecção de fadiga: se anotador avalia >50 exemplos sem mudar de categoria, sistema pausa e sugere pausa — estudos mostram 30% de perda de acurácia após 2h seguidas',
+          'Resultado após 3 meses: Kappa médio 0.82, 95% concordância com LLM judge em casos fáceis, detectou 2 regressões que testes automáticos perderam'
+        ]
       }
     ]
   },
@@ -1298,6 +1415,19 @@ results = client.search(
           'Comunicação: post-mortem público, transparência sobre o ocorrido e as correções',
           'Prevenção: automatize testes de fairness no CI/CD, estabeleça governança de IA'
         ]
+      },
+      {
+        title: 'Cenário Real: Conformidade com Regulamentações de IA na Prática',
+        type: 'everyday-scenario',
+        body: 'Sua empresa europeia de fintech quer lançar um assistente de IA que recomenda produtos financeiros personalizados. O EU AI Act classifica isso como "risco alto" — exigindo documentação técnica, avaliação de conformidade, supervisão humana e transparência. Você precisa navegar o processo regulatório sem paralisar o desenvolvimento, implementando os controles necessários enquanto mantém a velocidade de entrega.',
+        items: [
+          'Classificação de risco: seguindo o EU AI Act, seu sistema de recomendação financeira se enquadra em "risco alto" (Anexo III, ponto 4: "acesso a serviços financeiros essenciais"). Isso exige: documentação técnica completa, sistema de gestão de risco, logging de eventos, supervisão humana e precisão adequada',
+          'Documentação técnica: crie um "AI System Passport" que documenta: propósito do sistema, dados de treinamento (origem, volume, vieses conhecidos), métricas de performance (acurácia por grupo demográfico), arquitetura do modelo, medidas de segurança (guardrails, fallbacks), e procedimentos de supervisão humana',
+          'Sistema de gestão de risco: implemente uma matriz de riscos com 15 cenários (ex: "recomendar produto inadequado para idoso", "discriminar por código postal"). Para cada cenário: probabilidade (1-5), impacto (1-5), controles existentes, controles planejados, e pessoa responsável',
+          'Logging obrigatório: todo evento do sistema deve ser logado com timestamp, input do usuário, output do sistema, score de confiança, e decisões de fallback. Logs devem ser armazenados por 6 meses (mínimo legal) e auditáveis por autoridades regulatórias',
+          'Supervisão humana: implemente "human-on-the-loop" — o sistema faz recomendações automaticamente, mas um humano especialista revisa uma amostra (10% das recomendações, focando em casos de alto risco como >65 anos ou >50K investidos)',
+          'Resultado: após 4 meses de implementação, o sistema passa na auditoria interna de conformidade, o time de legal aprova o lançamento, e a vantagem competitiva de ser um dos primeiros fintechs com IA compliant atrai 3 grandes clientes corporativos'
+        ]
       }
     ]
   },
@@ -1359,6 +1489,19 @@ results = client.search(
         title: 'Arquitetura de Pipeline Multimodal',
         type: 'architecture',
         body: 'O pipeline multimodal tem 5 estágios: (1) Parse — PDF é decomposto em elementos (text blocks, tables, images, figures) usando detectores de layout (LayoutLM, DocTR). (2) Classificação — cada elemento é classificado: "texto corrido", "tabela", "gráfico", "imagem", "cabeçalho". (3) Processamento especializado: texto → LLM para sumarização, tabela → Table Transformer para CSV, gráfico → VLM para descrição, imagem → CLIP para embedding + VLM para descrição. (4) Fusão — todos os resultados são combinados em um documento estruturado hierárquico (mantendo a ordem original). (5) Geração — um LLM multimodal recebe o documento completo (texto + descrições de tabelas + descrições de imagens) e responde perguntas sobre ele. Esse pipeline processa um documento de 10 páginas em ~30 segundos com custo de ~$0.05.'
+      },
+      {
+        title: 'Cenário Real: Pipeline de Análise de Vídeo em Tempo Real',
+        type: 'everyday-scenario',
+        body: 'Sua empresa de segurança precisa de um sistema que analisa feeds de câmeras em tempo real: detectar intrusos, reconhecer placas de veículos, identificar pacotes suspeitos — tudo com latência <2 segundos. Vídeo combina processamento de imagens, áudio e análise temporal, exigindo um pipeline multimodal otimizado para velocidade sem sacrificar precisão.',
+        items: [
+          'Arquitetura: extraia 1 frame/segundo/câmera. Para cada frame: YOLOv8 (5ms), OCR para placas via PaddleOCR (15ms se detectar texto), classificador de cena via CLIP (10ms)',
+          'Filtragem inteligente: em vez de enviar cada frame para VLM ($0.01/frame), use YOLO + classificador para filtrar frames relevantes. Só envia para VLM quando detecta anomalia — redução de 86.400 para ~50 frames/dia (99.9%)',
+          'Áudio paralelo: transcreva áudio com Whisper (10s áudio → 500ms). Detecte palavras-chave: "ajuda", "socorro", "fogo" disparam alertas imediatos independente do VLM',
+          'Análise temporal: buffer dos últimos 10 frames com bounding boxes. Se pessoa corre para saída com mochila, probabilidade de fuga aumenta 3x vs frame isolado',
+          'Integração com alertas: quando incidente detectado com confiança >85%, envia para operador humano: frame + transcrição áudio + descrição VLM + recomendação de ação',
+          'Resultado: 50 câmeras simultâneas em 2 GPUs L40, latência média 800ms, 94% detecção, 2/1000 falsos positivos, $0.003/hora/câmera de custo'
+        ]
       }
     ]
   },
@@ -1423,6 +1566,19 @@ results = client.search(
         title: 'Estratégias de Escalonamento para Inferência',
         type: 'how-it-works',
         body: 'Escalar inferência de LLM não é como escalar um servidor web comum — GPUs são recursos finitos e caros. As estratégias principais: (1) Vertical: otimizar a GPU existente via continuous batching, quantization, FlashAttention — ganho de 10-30x sem novo hardware. (2) Horizontal: adicionar mais réplicas de GPU atrás de load balancer — escala linearmente até o limite do banco de dados/API. (3) Model sharding: distribuir o modelo entre GPUs (tensor parallelism para modelos >80GB) — permite servir modelos que não cabem em 1 GPU. (4) Caching: cache semântico + prefix caching reduzem a carga efetiva em 40-60%. (5) Model routing: rotear queries para o menor modelo que resolve a tarefa — reduz custo e aumenta capacidade efetiva. Na prática, uma combinação dessas estratégias permite escalar de centenas para dezenas de milhares de requisições por minuto com o mesmo hardware.'
+      },
+      {
+        title: 'Cenário Real: Otimização de Custos com Spot Instances e Model Router',
+        type: 'everyday-scenario',
+        body: 'Sua startup cresceu e agora gasta $28K/mês em GPUs on-demand na AWS para servir Llama 3.1 70B e 8B. Você precisa cortar custos sem afetar latência (P95 <3s). A solução combina spot instances (70% mais baratas) com model router inteligente e checkpointing para resiliência a interrupções — que podem ocorrer com aviso de apenas 2 minutos.',
+        items: [
+          'Arquitetura: 70% spot (2x L40 = $0.80/h vs $2.50/h on-demand), 30% on-demand como baseline. Load balancer prioriza spot, migra requisições ativas para on-demand quando spot está prestes a ser reclaimado',
+          'Checkpointing frequente: vLLM salva estado de inferência (KV cache) a cada 30s em NVMe local. Se spot é reclaimada, requisições dos últimos 30s são retomadas na on-demand — latência adicional de apenas 1-2s',
+          'Model router multi-camada: classifica query em 10ms → 70% simples vão para Llama 8B em spot, 30% complexas para Llama 70B em spot. Se sem spot, fallback para on-demand. Se tudo cheio, fila com prioridade',
+          'Auto-scaling preditivo: baseado em histórico de 4 semanas, pré-escala spot 15 min antes de picos (10h-12h, 14h-16h) e escala down fora horário comercial — reduziu capacidade ociosa de 40% para 12%',
+          'Monitore spot interruption rate por zona: se >5% interrupções, evite essa zona. Use 3 zonas com distribuição weighted — se uma fica instável, redistribui automaticamente',
+          'Resultado: custo de $28K para $9.5K/mês (66% de economia). Latência P95: 2.1s (vs 1.8s antes). Taxa de interrupção: 2.3% com zero requisições perdidas. Payback: 1.5 meses'
+        ]
       }
     ]
   },
@@ -1579,6 +1735,19 @@ class SemanticCache:
           { question: 'Chunks estão muito grandes e estourando o contexto. Como resolver?', answer: '(1) Reduza chunk_size (1024→512). (2) Use parent-child: busca em chunks pequenos, passa o chunk pai como contexto. (3) Implemente sumarização de chunks múltiplos antes de passar para o LLM.' },
           { question: 'RAG funciona em dev mas quebra em produção. Diferenças comuns?', answer: '(1) Dados diferentes: produção tem documentos que dev não tem. (2) Tamanho diferente: produção tem 10x mais chunks — HNSW index pode precisar de parâmetros diferentes. (3) Concorrência: múltiplas queries simultâneas podem causar contenção no vector DB.' }
         ]
+      },
+      {
+        title: 'Cenário Real: Construindo uma Feature de IA Completa em 2 Semanas',
+        type: 'everyday-scenario',
+        body: 'O VP de Produto apareceu com uma ideia: "quero que o usuário possa tirar uma foto de um produto e o app automaticamente encontre produtos similares no nosso catálogo usando IA". Prazo: 2 semanas para o MVP. Você precisa ir de zero a uma feature funcional em produção — escolhendo as ferramentas certas, gerenciando riscos e entregando valor real, não um protótipo frágil.',
+        items: [
+          'Dia 1-2: escolha da abordagem — em vez de fine-tunar um VLM (muito lento), use CLIP para embeddings de imagem + busca vetorial. CLIP já vem pré-treinado e entende similaridade visual-semântica. Também decida: não construa infrastructure do zero, use serviços gerenciados (Supabase Vector ou Pinecone)',
+          'Dia 3-5: implemente o pipeline — (1) upload da foto pelo usuário, (2) extrai embedding via API CLIP (5 linhas de código), (3) busca Top-10 no vector DB via cosine similarity, (4) retorna IDs dos produtos para o frontend. + testes de integração',
+          'Dia 6-8: frontend — adicione um botão "busca por imagem" na página de busca. O usuário tira/faz upload de foto, vê um loading spinner enquanto busca (que leva ~300ms), e os resultados aparecem com thumbnail + nome + preço + badge "similaridade: 92%"',
+          'Dia 9-10: validação — teste com 50 fotos de produtos reais contra o catálogo de 10K itens. Acurácia esperada: 85% (Top-5 relevante). Se abaixo, ajuste o threshold de similaridade ou aumente K para 20 com re-ranking',
+          'Dia 11-12: produção — adicione caching (embedding da foto é cacheado por 24h), rate limiting (10 buscas/minuto por usuário), monitoring (latência P95, taxa de sucesso, zero resultados), e fallback (se CLIP cair, tenta busca por texto com tags do produto)',
+          'Dia 13-14: lançamento e iteração — lance com feature flag para 10% dos usuários. Colete feedback: "a busca achou produtos parecidos mas não exatos". Iteração: adicione re-ranking com metadata (mesma categoria tem peso maior) — melhora satisfação em 30%. Feature flag para 100% na semana 3'
+        ]
       }
     ]
   },
@@ -1651,6 +1820,19 @@ class SemanticCache:
           { question: 'Como justificar o investimento em infraestrutura de IA?', answer: 'Mostre a curva de custo: "Sem infraestrutura, cada requisição custa $0.05 com GPT-4. Com caching + model routing + fine-tuning, reduzimos para $0.008 — economia de 84%. O investimento de $50K em infraestrutura se paga em 3 meses com o volume atual. E com o crescimento projetado, em 6 meses estaremos economizando $30K/mês."' },
           { question: 'Stakeholder quer IA 100% autônoma sem supervisão. Como responder?', answer: 'Não diga "não pode" — mostre o risco em termos de negócio: "100% autônomo significa que 1 em 20 clientes receberá uma resposta incorreta. Para um e-commerce com 10K pedidos/dia, são 500 clientes/dia com informação errada. Sugiro começarmos com supervisão em 100%, medirmos a precisão por 30 dias, e definirmos juntos o nível aceitável de autonomia baseado em dados reais."' },
           { question: 'Como medir o ROI de uma iniciativa de IA para apresentar ao board?', answer: 'Defina 3 métricas: (1) Redução de custo: horas de trabalho economizadas × custo/hora, (2) Aumento de receita: melhoria em conversão/upsell atribuível à IA, (3) Satisfação do cliente: NPS/CSAT antes e depois. Apresente sempre com intervalo de confiança: "estimamos economia de $100-150K/ano com 90% de confiança baseado no piloto de 3 meses."' }
+        ]
+      },
+      {
+        title: 'Cenário Real: A Grande Decisão — Refatorar ou Entregar?',
+        type: 'everyday-scenario',
+        body: 'Seu time de 5 engenheiros está construindo um assistente de IA para advogados. O MVP foi um sucesso: 200 usuários pagantes em 3 meses. Mas o código é uma "casa de cartas": o pipeline RAG foi escrito às pressas, não tem testes, o prompt engineering está espalhado em 15 arquivos diferentes, e qualquer mudança quebra alguma coisa. O CTO quer refatorar ("vamos perder 2 meses mas ter uma base sólida"). O CEO quer novas features ("os concorrentes estão avançando"). Você está no meio — e precisa decidir.',
+        items: [
+          'Análise da dívida técnica: (1) Pipeline RAG monolítico — qualquer mudança no chunking afeta o retrieval que afeta a geração. (2) Prompts em arquivos soltos — sem versionamento, sem testes, sem golden dataset. (3) Zero testes de integração — cada deploy é uma aposta. (4) Sem monitoring de qualidade — não sabe se uma mudança melhorou ou piorou',
+          'Proposta de meio-termo: em vez de "refatorar tudo" ou "seguir em frente", proponha 3 sprints de "refactoring dirigido por features": cada nova feature vem com refactoring da área que ela toca. Ex: "feature de sumarização de contratos" → refatora o pipeline de chunking (que afeta sumarização) + adiciona testes para chunking. Em 3 meses, 60% do sistema está refatorado e 5 novas features foram entregues',
+          'Implemente a "regra do escoteiro": toda vez que um engenheiro toca em um arquivo, ele deixa 5% melhor — renomeia uma variável confusa, adiciona um comentário útil, extrai uma função. Pequenas melhorias contínuas que não bloqueiam entregas mas reduzem dívida gradualmente',
+          'Crie barreiras para nova dívida: (1) todo novo prompt deve ter um teste no golden dataset, (2) toda nova integração deve ter logging e monitoring, (3) todo novo componente RAG deve ser isolado (não pode ser monolítico). A dívida não cresce enquanto a existente é paga',
+          'Comunique em linguagem de negócio: "Sem refatoração, cada nova feature demora 20% mais que a anterior — em 6 meses, features que hoje levam 2 semanas vão levar 5 semanas. Com refactoring contínuo, o custo se mantém estável. O investimento de 20% do tempo em qualidade paga 3x em produtividade futura."',
+          'Resultado: após 6 meses, o time entregou 12 features (vs 18 que poderiam ter sido entregues sem refactoring), mas a velocidade de entrega AUMENTOU 30% (de 2 semanas para 1.5 semanas por feature) — enquanto sem refactoring teria CAÍDO 40% (para 3.5 semanas). O CEO entendeu que qualidade é acelerador, não freio'
         ]
       }
     ]
@@ -1818,6 +2000,19 @@ console.log("Resultado:", result.content)`
         title: 'Exemplo Diário: MCP como Tomada Universal',
         type: 'analogy',
         body: 'Imagine que você tem 5 dispositivos (LLMs) e 10 aparelhos (ferramentas). Sem MCP, cada dispositivo precisa de um carregador específico: o carregador do iPhone (tool OpenAI) não carrega o Samsung (Claude). Com MCP, todos os dispositivos usam USB-C: um único cabo para tudo. Na prática, sua empresa tem ferramentas de busca, banco de dados, Slack, GitHub e email. Sem MCP, cada LLM que você contrata precisa de integração customizada com APIs diferentes. Com MCP, você escreve a ferramenta uma vez usando o protocolo padronizado e qualquer LLM compatível (Claude, GPT, Llama, Gemini) pode usá-la imediatamente. O ganho é enorme: menos código boilerplate, menos bugs de integração, e liberdade para trocar de provedor sem reescrever integrações. É por isso que a Anthropic abriu o protocolo — para criar um ecossistema onde ferramentas são intercambiáveis e LLMs são escolha sua, não lock-in.'
+      },
+      {
+        title: 'Cenário Real: Construindo um Ecossistema de Ferramentas com MCP',
+        type: 'everyday-scenario',
+        body: 'Sua empresa adotou MCP como padrão para todas as integrações de IA e agora tem 20 MCP servers em produção (busca, banco de dados, Slack, GitHub, Jira, email, calendário, CRM, etc.). O problema mudou: não é mais "como integrar", mas "como gerenciar, versionar, testar e monitorar 20 servidores MCP". Você precisa construir uma plataforma interna de MCP que padronize deploy, autenticação, logging e descoberta de servidores.',
+        items: [
+          'MCP Registry interno: um serviço central (equivalente ao npm/pip para MCP) onde cada time publica seus MCP servers com nome, versão, descrição, schema das ferramentas e documentação. O registry também serve como "service discovery" para os clientes MCP',
+          'Padronize o deployment: cada MCP server é um container Docker com health check em /health, metrics em /metrics (Prometheus), e logging estruturado (JSON para stdout). Use Kubernetes para orquestração com auto-scaling baseado em requisições por segundo',
+          'Autenticação e autorização centralizadas: implemente um MCP Gateway (proxy reverso) que adiciona autenticação (OAuth2), rate limiting (por servidor e por cliente), e logging de todas as chamadas. Cada cliente MCP recebe um API key que o gateway valida antes de rotear para o servidor',
+          'Testes de integração MCP: para cada servidor, mantenha um conjunto de testes que: (1) conecta ao servidor, (2) descobre ferramentas (list_tools), (3) chama cada ferramenta com parâmetros válidos, (4) chama com parâmetros inválidos (deve retornar erro schema), (5) verifica latência <500ms P95. Roda no CI/CD',
+          'Monitoring e alertas: dashboard Grafana mostra por servidor: requisições/minuto, latência P50/P95/P99, taxa de erro, e top tools chamadas. Alertas: latência P95 >2s por 5 min, taxa de erro >5%, servidor offline, e "tool drift" (schema da tool mudou sem versionamento — detectado comparando schema atual vs schema registrado)',
+          'Versionamento semântico: quebra de compatibilidade = major version bump. O registry mantém múltiplas versões. Clientes antigos continuam usando v1 enquanto novos clientes migram para v2. O MCP Gateway roteia baseado no header X-MCP-Version. Deprecation policy: versão antiga recebe header "Warning: 299 server/v1 "migre para v2 até 01/06""'
+        ]
       }
     ]
   }

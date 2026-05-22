@@ -30,9 +30,9 @@ const HeroOverlay: React.FC<HeroOverlayProps> = React.memo(
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -20 }}
         transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-        className="pointer-events-none absolute z-40"
+        className="pointer-events-none absolute z-30"
         style={{
-          left: isMobile ? '5%' : '19rem',
+          left: isMobile ? '5%' : '3rem',
           top: isMobile ? '3rem' : '3rem',
           right: isMobile ? '5%' : 'auto',
           maxWidth: isMobile ? '90%' : 560,

@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import React from 'react'
 import { render } from '@testing-library/react'
+import { ThemeProvider } from '../store/ThemeContext'
 
 import type { ContentSection } from '../types/mindmap'
 import { getRenderer } from '../services/contentRegistry'
@@ -15,6 +16,13 @@ import '../components/molecules/SectionQAList'
 import '../components/molecules/SectionAnalogy'
 import '../components/molecules/SectionCheatsheet'
 import '../components/molecules/SectionEverydayScenario'
+
+// ---------------------------------------------------------------------------
+// Helper: render with ThemeProvider wrapper
+// ---------------------------------------------------------------------------
+function renderWithTheme(ui: React.ReactElement) {
+  return render(<ThemeProvider>{ui}</ThemeProvider>)
+}
 
 // ---------------------------------------------------------------------------
 // SectionTextBody
@@ -32,7 +40,7 @@ describe('SectionTextBody', () => {
       }
 
       if (Component) {
-        const { container } = render(
+        const { container } = renderWithTheme(
           <Component section={section} groupColor="#FF006E" />,
         )
         expect(container.textContent).toContain('Seção Teste')
@@ -57,7 +65,7 @@ describe('SectionConceptList', () => {
     }
 
     if (Component) {
-      const { container } = render(
+      const { container } = renderWithTheme(
         <Component section={section} groupColor="#00E676" />,
       )
       expect(container.textContent).toContain('Conceitos-Chave')
@@ -76,7 +84,7 @@ describe('SectionConceptList', () => {
     }
 
     if (Component) {
-      const { container } = render(
+      const { container } = renderWithTheme(
         <Component section={section} groupColor="#00E676" />,
       )
       expect(container.textContent).toContain('Conceitos')
@@ -103,7 +111,7 @@ describe('SectionCodeBlock', () => {
     }
 
     if (Component) {
-      const { container } = render(
+      const { container } = renderWithTheme(
         <Component section={section} groupColor="#FFAB00" />,
       )
       expect(container.textContent).toContain('Exemplo')
@@ -133,7 +141,7 @@ describe('SectionQAList', () => {
     }
 
     if (Component) {
-      const { container } = render(
+      const { container } = renderWithTheme(
         <Component section={section} groupColor="#D500F9" />,
       )
       expect(container.textContent).toContain('Perguntas Frequentes')
@@ -160,7 +168,7 @@ describe('SectionAnalogy', () => {
     }
 
     if (Component) {
-      const { container } = render(
+      const { container } = renderWithTheme(
         <Component section={section} groupColor="#FF1744" />,
       )
       expect(container.textContent).toContain('Analogia')
@@ -189,7 +197,7 @@ describe('SectionProsCons', () => {
     }
 
     if (Component) {
-      const { container } = render(
+      const { container } = renderWithTheme(
         <Component section={section} groupColor="#00E5FF" />,
       )
       expect(container.textContent).toContain('Vantagens')
@@ -218,7 +226,7 @@ describe('SectionCheatsheet', () => {
     }
 
     if (Component) {
-      const { container } = render(
+      const { container } = renderWithTheme(
         <Component section={section} groupColor="#76FF03" />,
       )
       expect(container.textContent).toContain('Dicas Rápidas')
@@ -243,7 +251,7 @@ describe('SectionLinkList', () => {
     }
 
     if (Component) {
-      const { container } = render(
+      const { container } = renderWithTheme(
         <Component section={section} groupColor="#FF9100" />,
       )
       expect(container.textContent).toContain('Links Relacionados')
@@ -271,7 +279,7 @@ describe('SectionEverydayScenario', () => {
     }
 
     if (Component) {
-      const { container } = render(
+      const { container } = renderWithTheme(
         <Component section={section} groupColor="#FF6B6B" />,
       )
       expect(container.textContent).toContain('Cenário do Dia a Dia')
@@ -291,7 +299,7 @@ describe('SectionEverydayScenario', () => {
     }
 
     if (Component) {
-      const { container } = render(
+      const { container } = renderWithTheme(
         <Component section={section} groupColor="#FF6B6B" />,
       )
       expect(container.textContent).toContain('Cenário Mínimo')

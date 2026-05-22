@@ -84,6 +84,7 @@ interface LabelOptions {
   fontSize?: number
   glowColor?: string
   glowSize?: number
+  textColor?: string
 }
 
 /** Cria (ou retorna do cache) uma CanvasTexture com o texto formatado. */
@@ -93,8 +94,9 @@ export function getLabelTexture({
   fontSize = 48,
   glowColor = 'rgba(255,255,255,0.3)',
   glowSize = 12,
+  textColor = '#ffffff',
 }: LabelOptions): THREE.CanvasTexture {
-  const key = `${text}|${color}|${fontSize}|${glowColor}|${glowSize}`
+  const key = `${text}|${color}|${fontSize}|${glowColor}|${glowSize}|${textColor}`
   if (spriteTextureCache.has(key)) {
     return spriteTextureCache.get(key)!
   }
@@ -134,7 +136,7 @@ export function getLabelTexture({
 
   // Texto principal (sem glow para ficar nítido)
   ctx.shadowBlur = 0
-  ctx.fillStyle = '#ffffff'
+  ctx.fillStyle = textColor
   ctx.fillText(text, cx, cy)
 
   const texture = new THREE.CanvasTexture(canvas)

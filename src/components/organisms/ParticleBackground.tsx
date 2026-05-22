@@ -1,67 +1,49 @@
-import React, { useState, useEffect } from 'react'
+import React, { useMemo } from 'react'
 import { Canvas } from '@react-three/fiber'
 import StarField from '../molecules/StarField'
 
 interface ParticleBackgroundProps {
   opacity?: number
+  dense?: boolean
 }
 
-/**
- * Fundo animado com partículas 3D multicoloridas.
- * Usa dois campos de estrelas com cores complementares para
- * criar profundidade e movimento.
- */
 const ParticleBackground: React.FC<ParticleBackgroundProps> = React.memo(
-  (_props) => {
-    const [visible, setVisible] = useState(false)
-
-    useEffect(() => {
-      const timer = setTimeout(() => setVisible(true), 200)
-      return () => clearTimeout(timer)
-    }, [])
+  ({ opacity = 1, dense = false }) => {
+    const layers = useMemo(() => {
+      if (dense) {
+        return [
+          { count: 3000, spread: 30, color: '#7C3AED', size: 0.02, speedX: 0.02, speedY: 0.015 },
+          { count: 2500, spread: 18, color: '#00FFF0', size: 0.03, speedX: 0.04, speedY: 0.03 },
+          { count: 1500, spread: 25, color: '#FF006E', size: 0.02, speedX: 0.03, speedY: 0.025 },
+          { count: 1000, spread: 35, color: '#00E676', size: 0.015, speedX: 0.025, speedY: 0.02 },
+          { count: 800, spread: 15, color: '#FFAB00', size: 0.025, speedX: 0.05, speedY: 0.04 },
+        ]
+      }
+      return [
+        { count: 2000, spread: 20, color: '#7C3AED', size: 0.015, speedX: 0.03, speedY: 0.02 },
+        { count: 1500, spread: 12, color: '#00FFF0', size: 0.025, speedX: 0.06, speedY: 0.05 },
+        { count: 500, spread: 18, color: '#FF006E', size: 0.015, speedX: 0.04, speedY: 0.03 },
+      ]
+    }, [dense])
 
     return (
       <div
         className="absolute inset-0 pointer-events-none"
-        style={{ 
-          opacity: visible ? 1 : 0,
-          transition: 'opacity 1.5s cubic-bezier(0.22, 1, 0.36, 1)',
-        }}
+        style={{ opacity }}
       >
-        <Canvas camera={{ position: [0, 0, 1] }}>
-          {/* Camada de fundo: partículas roxas lentas */}
-          <div className="animate-stagger-fade-in delay-100">
+        <Canvas camera={{ position: [0, 0, 1], fov: 60 }} gl={{ alpha: true, antialias: false }}>
+          {layers.map((layer, i) => (
             <StarField
-              count={2000}
-              spread={20}
-              color="#7C3AED"
-              size={0.015}
-              rotationSpeedX={0.03}
-              rotationSpeedY={0.02}
+              key={i}
+              count={layer.count}
+              spread={layer.spread}
+              color={layer.color}
+              size={layer.size}
+              rotationSpeedX={layer.speedX}
+              rotationSpeedY={layer.speedY}
+              delay={i * 0.5}
             />
-          </div>
-          {/* Camada de frente: partículas ciano rápidas */}
-          <div className="animate-stagger-fade-in delay-400">
-            <StarField
-              count={1500}
-              spread={12}
-              color="#00FFF0"
-              size={0.025}
-              rotationSpeedX={0.06}
-              rotationSpeedY={0.05}
-            />
-          </div>
-          {/* Pontos rosas ocasionais */}
-          <div className="animate-stagger-fade-in delay-700">
-            <StarField
-              count={500}
-              spread={18}
-              color="#FF006E"
-              size={0.015}
-              rotationSpeedX={0.04}
-              rotationSpeedY={0.03}
-            />
-          </div>
+          ))}
         </Canvas>
       </div>
     )

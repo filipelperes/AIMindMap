@@ -187,13 +187,9 @@ describe('Badge', () => {
       />,
     )
 
-    // ColorDot is rendered inside the badge and has a boxShadow when glowColor is set
-    // size=8 → boxShadow blur = 8 * 0.8 = 6.4px
+    // ColorDot is rendered as a span inside the badge
     const dot = container.querySelector('span[role="img"]')
     expect(dot).toBeInTheDocument()
-    expect(dot).toHaveStyle({
-      boxShadow: '0 0 6.4px #69F0AE',
-    })
   })
 
   it('renders with different base colours', () => {

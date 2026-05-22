@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useTheme } from '../../store/ThemeContext'
 
@@ -8,7 +8,7 @@ interface TourStep {
   icon: string
   title: string
   description: string
-  highlight?: string // CSS selector to highlight
+  highlight?: string
 }
 
 const TOUR_STEPS: TourStep[] = [
@@ -37,6 +37,18 @@ const TOUR_STEPS: TourStep[] = [
     highlight: '[data-tour="panel"]'
   },
   {
+    icon: '📋',
+    title: 'Cheatsheet de Comandos',
+    description: 'Acesse o cheatsheet com atalhos e dicas rápidas para navegar mais rápido pelo MindMap e consultar comandos essenciais.',
+    highlight: '[data-tour="cheatsheet"]'
+  },
+  {
+    icon: '⌨️',
+    title: 'Atalhos do Teclado',
+    description: 'Domine os atalhos: ← → para navegar entre tópicos, + - para zoom, R para resetar a câmera, F para busca rápida. Navegue como um profissional.',
+    highlight: '[data-tour="shortcuts"]'
+  },
+  {
     icon: '🌓',
     title: 'Modo Claro/Escuro',
     description: 'Alternne entre temas no menu lateral. O app lembra sua preferência. Comece explorando!',
@@ -49,11 +61,12 @@ const WelcomeTour: React.FC = React.memo(() => {
   const [currentStep, setCurrentStep] = useState(0)
   const [hasCompleted, setHasCompleted] = useState(true)
   const { mode } = useTheme()
+  const glowRef = useRef<HTMLDivElement>(null)
+  const [glowPosition, setGlowPosition] = useState({ top: 0, left: 0, width: 0, height: 0 })
 
   useEffect(() => {
     const completed = localStorage.getItem(TOUR_KEY)
     if (!completed) {
-      // Pequeno delay para o 3D carregar
       const timer = setTimeout(() => {
         setIsOpen(true)
         setHasCompleted(false)
@@ -61,6 +74,32 @@ const WelcomeTour: React.FC = React.memo(() => {
       return () => clearTimeout(timer)
     }
   }, [])
+
+  useEffect(() => {
+    if (!isOpen || !TOUR_STEPS[currentStep]?.highlight) return
+
+    const updateGlowPosition = () => {
+      const el = document.querySelector(TOUR_STEPS[currentStep].highlight!)
+      if (el) {
+        const rect = el.getBoundingClientRect()
+        setGlowPosition({
+          top: rect.top - 8,
+          left: rect.left - 8,
+          width: rect.width + 16,
+          height: rect.height + 16
+        })
+      }
+    }
+
+    updateGlowPosition()
+    window.addEventListener('resize', updateGlowPosition)
+    const timer = setTimeout(updateGlowPosition, 100)
+
+    return () => {
+      window.removeEventListener('resize', updateGlowPosition)
+      clearTimeout(timer)
+    }
+  }, [currentStep, isOpen])
 
   const completeTour = () => {
     localStorage.setItem(TOUR_KEY, 'true')
@@ -92,22 +131,53 @@ const WelcomeTour: React.FC = React.memo(() => {
     <AnimatePresence>
       {isOpen && (
         <>
-          {/* Backdrop */}
+          {step.highlight && (
+            <motion.div
+              ref={glowRef}
+              className="fixed z-[99] pointer-events-none rounded-2xl"
+              style={{
+                top: glowPosition.top,
+                left: glowPosition.left,
+                width: glowPosition.width,
+                height: glowPosition.height,
+                border: '2px solid rgba(0,255,240,0.5)',
+              }}
+              animate={{
+                boxShadow: [
+                  '0 0 12px 2px rgba(0,255,240,0.15), 0 0 30px 6px rgba(0,255,240,0.08)',
+                  '0 0 20px 6px rgba(0,255,240,0.35), 0 0 50px 12px rgba(0,255,240,0.15)',
+                  '0 0 12px 2px rgba(0,255,240,0.15), 0 0 30px 6px rgba(0,255,240,0.08)',
+                ],
+                scale: [1, 1.04, 1],
+              }}
+              transition={{
+                duration: 2.5,
+                repeat: Infinity,
+                ease: 'easeInOut',
+              }}
+            />
+          )}
+
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
+            transition={{ duration: 0.5, ease: 'easeOut' }}
             className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm"
             onClick={completeTour}
           />
 
-          {/* Tooltip card */}
           <motion.div
             key={currentStep}
-            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+            initial={{ opacity: 0, scale: 0.88, y: 30 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.9, y: -20 }}
-            transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+            exit={{ opacity: 0, scale: 0.88, y: -30 }}
+            transition={{
+              type: 'spring',
+              damping: 30,
+              stiffness: 250,
+              mass: 0.7,
+            }}
             className="fixed left-1/2 top-1/2 z-[101] w-full max-w-md -translate-x-1/2 -translate-y-1/2 rounded-3xl border p-8 shadow-2xl"
             style={{
               backgroundColor: mode === 'dark' ? 'rgba(8,11,26,0.95)' : 'rgba(255,255,255,0.95)',
@@ -115,55 +185,73 @@ const WelcomeTour: React.FC = React.memo(() => {
               backdropFilter: 'blur(40px)',
             }}
           >
-            {/* Step indicator */}
             <div className="mb-6 flex items-center justify-between">
               <div className="flex gap-1.5">
                 {TOUR_STEPS.map((_, i) => (
-                  <div
+                  <motion.div
                     key={i}
-                    className="h-1.5 rounded-full transition-all duration-500"
+                    className="rounded-full transition-all duration-500"
                     style={{
                       width: i === currentStep ? 24 : 8,
+                      height: 6,
                       backgroundColor: i === currentStep
                         ? '#00FFF0'
                         : mode === 'dark' ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)',
+                    }}
+                    animate={i === currentStep ? {
+                      scale: [1, 1.25, 1],
+                    } : {}}
+                    transition={{
+                      duration: 1.5,
+                      repeat: Infinity,
+                      ease: 'easeInOut',
                     }}
                   />
                 ))}
               </div>
               <button
                 onClick={completeTour}
-                className="text-xs font-medium cursor-pointer transition-opacity hover:opacity-70"
+                className="text-xs font-medium cursor-pointer transition-all hover:opacity-70"
                 style={{ color: mode === 'dark' ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)' }}
               >
                 Pular
               </button>
             </div>
 
-            {/* Icon */}
-            <div className="mb-4 text-5xl">{step.icon}</div>
+            <motion.div
+              className="mb-4 text-5xl"
+              animate={{ y: [0, -5, 0] }}
+              transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
+            >
+              {step.icon}
+            </motion.div>
 
-            {/* Title */}
-            <h2
+            <motion.h2
               className="mb-2 text-2xl font-bold"
               style={{ color: mode === 'dark' ? '#F0F4FF' : '#1A1A2E' }}
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.1, duration: 0.4, ease: 'easeOut' }}
             >
               {step.title}
-            </h2>
+            </motion.h2>
 
-            {/* Description */}
-            <p
+            <motion.p
               className="mb-8 text-sm leading-relaxed"
               style={{ color: mode === 'dark' ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)' }}
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.2, duration: 0.4, ease: 'easeOut' }}
             >
               {step.description}
-            </p>
+            </motion.p>
 
-            {/* Navigation */}
             <div className="flex items-center justify-between">
-              <button
+              <motion.button
                 onClick={prevStep}
                 disabled={isFirst}
+                whileHover={!isFirst ? { scale: 1.05, x: -2 } : {}}
+                whileTap={!isFirst ? { scale: 0.95 } : {}}
                 className="rounded-xl px-4 py-2 text-sm font-medium transition-all disabled:opacity-30 cursor-pointer disabled:cursor-not-allowed"
                 style={{
                   backgroundColor: mode === 'dark' ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)',
@@ -171,22 +259,24 @@ const WelcomeTour: React.FC = React.memo(() => {
                 }}
               >
                 ← Anterior
-              </button>
+              </motion.button>
 
               <span
-                className="text-xs"
+                className="text-xs tabular-nums"
                 style={{ color: mode === 'dark' ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)' }}
               >
                 {currentStep + 1} / {TOUR_STEPS.length}
               </span>
 
-              <button
+              <motion.button
                 onClick={nextStep}
-                className="rounded-xl px-6 py-2 text-sm font-bold text-white transition-all hover:scale-105 cursor-pointer"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="rounded-xl px-6 py-2 text-sm font-bold text-white transition-all cursor-pointer"
                 style={{ backgroundColor: '#7C3AED' }}
               >
                 {isLast ? '✨ Começar!' : 'Próximo →'}
-              </button>
+              </motion.button>
             </div>
           </motion.div>
         </>

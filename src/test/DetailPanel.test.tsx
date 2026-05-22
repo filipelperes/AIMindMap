@@ -224,7 +224,7 @@ describe('DetailPanel', () => {
       const aside = container.querySelector('[data-tour="panel"]')
       expect(aside).toBeInTheDocument()
       expect(aside).toHaveStyle({
-        backgroundColor: 'rgba(8,11,26,0.6)',
+        backgroundColor: 'rgba(8,11,26,0.65)',
       })
     })
 
@@ -243,7 +243,7 @@ describe('DetailPanel', () => {
       const aside = container.querySelector('[data-tour="panel"]')
       expect(aside).toBeInTheDocument()
       expect(aside).toHaveStyle({
-        backgroundColor: 'rgba(255,255,255,0.85)',
+        backgroundColor: 'rgba(255,255,255,0.82)',
       })
     })
 

@@ -132,9 +132,24 @@ body {
 }
 
 /* ══════════════════════════════════
-   Animations
-   ══════════════════════════════════ */
-* {
+    Canvas / WebGL touch handling
+    ══════════════════════════════════ */
+canvas {
+  touch-action: manipulation;
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.touch-manipulation {
+  touch-action: manipulation;
+  -webkit-touch-callout: none;
+}
+
+/* ══════════════════════════════════
+    Animations
+    ══════════════════════════════════ */
+*:not(canvas):not(.no-transition) {
   transition-property: background-color, border-color, opacity, color, transform, box-shadow, filter;
   transition-duration: 200ms;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);

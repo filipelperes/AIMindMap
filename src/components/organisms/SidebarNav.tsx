@@ -311,15 +311,15 @@ const SidebarNav: React.FC<SidebarNavProps> = React.memo(
     return (
       <aside
         data-tour="sidebar"
-        className="fixed left-0 top-0 bottom-0 z-40 flex w-64 flex-col border-r p-4"
+        className="fixed left-0 top-0 bottom-0 z-50 flex w-64 flex-col border-r p-4"
         style={{
-          backgroundColor: mode === 'dark' ? 'rgba(8,11,26,0.82)' : 'rgba(255,255,255,0.78)',
-          borderColor: mode === 'dark' ? 'rgba(255,255,255,0.06)' : 'rgba(124,58,237,0.10)',
-          backdropFilter: 'blur(28px) saturate(1.5)',
-          WebkitBackdropFilter: 'blur(28px) saturate(1.5)',
+          backgroundColor: mode === 'dark' ? 'rgba(8,11,26,0.72)' : 'rgba(255,255,255,0.72)',
+          borderColor: mode === 'dark' ? 'rgba(255,255,255,0.06)' : 'rgba(124,58,237,0.12)',
+          backdropFilter: 'blur(32px) saturate(1.6)',
+          WebkitBackdropFilter: 'blur(32px) saturate(1.6)',
           boxShadow: mode === 'dark'
             ? '4px 0 24px rgba(0,0,0,0.3)'
-            : '4px 0 24px rgba(124,58,237,0.06)',
+            : '4px 0 24px rgba(124,58,237,0.08)',
         }}
       >
         {sidebarContent}

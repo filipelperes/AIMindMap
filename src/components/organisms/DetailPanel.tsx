@@ -30,6 +30,16 @@ const DetailPanel: React.FC<DetailPanelProps> = React.memo(
 
     return (
       <AnimatePresence>
+        {/* Backdrop transparente — clicar fora fecha o painel */}
+        <motion.div
+          key={`backdrop-${node.id}`}
+          className="fixed inset-0 z-40"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.15 }}
+          onClick={onClose}
+        />
         <motion.aside
           data-tour="panel"
           key={node.id}
@@ -56,7 +66,7 @@ const DetailPanel: React.FC<DetailPanelProps> = React.memo(
           }`}
           style={{
             ...(isMobile ? {} : { width: panelWidth }),
-            backgroundColor: mode === 'dark' ? 'rgba(8,11,26,0.65)' : 'rgba(255,255,255,0.82)',
+            backgroundColor: mode === 'dark' ? 'rgba(8,11,26,0.72)' : 'rgba(255,255,255,0.78)',
             borderColor: mode === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(124,58,237,0.15)',
             backdropFilter: 'blur(28px) saturate(1.6)',
             WebkitBackdropFilter: 'blur(28px) saturate(1.6)',
