@@ -170,80 +170,6 @@ export const graphData: GraphData = {
       learningStep: 14,
       spinSpeed: 0.05,
       val: 7
-    },
-
-    // ═══ NOVOS NÓS — EXPANSÃO ═══
-    {
-      id: 'StructuredOutputs',
-      group: 20,
-      description: 'Garantia de formato de saída com esquemas Pydantic, JSON mode e bibliotecas como instructor e Outlines.',
-      content: nodeContent.StructuredOutputs,
-      learningStep: 2.5,
-      spinSpeed: 0.09,
-      val: 8
-    },
-    {
-      id: 'ContextEngineering',
-      group: 18,
-      description: 'Otimização do contexto enviado ao LLM: compressão, sliding window, token budget e destilação usando LLMLingua.',
-      content: nodeContent.ContextEngineering,
-      learningStep: 3.5,
-      spinSpeed: 0.10,
-      val: 11
-    },
-    {
-      id: 'KnowledgeGraphs',
-      group: 26,
-      description: 'Construção e consulta de grafos de conhecimento com entidades e relações para busca multi-hop estruturada.',
-      content: nodeContent.KnowledgeGraphs,
-      learningStep: 3.3,
-      spinSpeed: 0.09,
-      val: 8
-    },
-    {
-      id: 'Workflows',
-      group: 16,
-      description: 'Orquestração de pipelines de IA com DAGs, loops, human-in-the-loop e paralelismo usando LangGraph e Prefect.',
-      content: nodeContent.Workflows,
-      learningStep: 4.5,
-      spinSpeed: 0.12,
-      val: 11
-    },
-    {
-      id: 'MultiAgentSystems',
-      group: 17,
-      description: 'Coordenação entre múltiplos agentes especializados com orquestração, handoff e debate usando CrewAI e AutoGen.',
-      content: nodeContent.MultiAgentSystems,
-      learningStep: 5.2,
-      spinSpeed: 0.15,
-      val: 10
-    },
-    {
-      id: 'FunctionCalling',
-      group: 21,
-      description: 'Capacidade nativa de LLMs de declarar e invocar ferramentas externas via APIs como OpenAI tool use e Anthropic tool use.',
-      content: nodeContent.FunctionCalling,
-      learningStep: 5.6,
-      spinSpeed: 0.11,
-      val: 8
-    },
-    {
-      id: 'HybridSearch',
-      group: 22,
-      description: 'Combinação de busca semântica vetorial com busca lexical BM25 usando RRF para resultados mais precisos.',
-      content: nodeContent.HybridSearch,
-      learningStep: 7.5,
-      spinSpeed: 0.08,
-      val: 8
-    },
-    {
-      id: 'ObservabilityAI',
-      group: 19,
-      description: 'Monitoramento, tracing e observabilidade de sistemas de IA com LangSmith, Langfuse e Phoenix para debug e otimização.',
-      content: nodeContent.ObservabilityAI,
-      learningStep: 8.5,
-      spinSpeed: 0.07,
-      val: 10
     }
   ],
 
@@ -291,61 +217,7 @@ export const graphData: GraphData = {
     { source: 'LLM', target: 'EvalTesting' },
     { source: 'FineTuning', target: 'EvalTesting' },
     { source: 'Multimodal', target: 'VectorDB' },
-    { source: 'Multimodal', target: 'Agent' },
-
-    // ═══ NOVOS LINKS — StructuredOutputs ═══
-    { source: 'StructuredOutputs', target: 'LLM' },
-    { source: 'StructuredOutputs', target: 'PromptEngineering' },
-    { source: 'StructuredOutputs', target: 'RAG' },
-    { source: 'StructuredOutputs', target: 'AISystemDesign' },
-
-    // ═══ NOVOS LINKS — ContextEngineering ═══
-    { source: 'ContextEngineering', target: 'LLM' },
-    { source: 'ContextEngineering', target: 'RAG' },
-    { source: 'ContextEngineering', target: 'PromptEngineering' },
-    { source: 'ContextEngineering', target: 'LLMOps' },
-    { source: 'ContextEngineering', target: 'AISystemDesign' },
-
-    // ═══ NOVOS LINKS — KnowledgeGraphs ═══
-    { source: 'KnowledgeGraphs', target: 'RAG' },
-    { source: 'KnowledgeGraphs', target: 'VectorDB' },
-    { source: 'KnowledgeGraphs', target: 'AISystemDesign' },
-    { source: 'KnowledgeGraphs', target: 'LLM' },
-    { source: 'KnowledgeGraphs', target: 'Workflows' },
-
-    // ═══ NOVOS LINKS — Workflows ═══
-    { source: 'Workflows', target: 'LLM' },
-    { source: 'Workflows', target: 'RAG' },
-    { source: 'Workflows', target: 'Agent' },
-    { source: 'Workflows', target: 'MCP' },
-    { source: 'Workflows', target: 'AISystemDesign' },
-
-    // ═══ NOVOS LINKS — MultiAgentSystems ═══
-    { source: 'MultiAgentSystems', target: 'Agent' },
-    { source: 'MultiAgentSystems', target: 'MCP' },
-    { source: 'MultiAgentSystems', target: 'AISystemDesign' },
-    { source: 'MultiAgentSystems', target: 'Workflows' },
-    { source: 'MultiAgentSystems', target: 'LLMOps' },
-
-    // ═══ NOVOS LINKS — FunctionCalling ═══
-    { source: 'FunctionCalling', target: 'LLM' },
-    { source: 'FunctionCalling', target: 'Agent' },
-    { source: 'FunctionCalling', target: 'MCP' },
-    { source: 'FunctionCalling', target: 'StructuredOutputs' },
-    { source: 'FunctionCalling', target: 'AISystemDesign' },
-
-    // ═══ NOVOS LINKS — HybridSearch ═══
-    { source: 'HybridSearch', target: 'VectorDB' },
-    { source: 'HybridSearch', target: 'RAG' },
-    { source: 'HybridSearch', target: 'AISystemDesign' },
-    { source: 'HybridSearch', target: 'LLMOps' },
-
-    // ═══ NOVOS LINKS — ObservabilityAI ═══
-    { source: 'ObservabilityAI', target: 'LLMOps' },
-    { source: 'ObservabilityAI', target: 'EvalTesting' },
-    { source: 'ObservabilityAI', target: 'AISystemDesign' },
-    { source: 'ObservabilityAI', target: 'RAG' },
-    { source: 'ObservabilityAI', target: 'Agent' }
+    { source: 'Multimodal', target: 'Agent' }
   ]
 }
 
