@@ -4,9 +4,8 @@ import Badge from '../atoms/Badge'
 import CloseButton from '../atoms/CloseButton'
 import ScrollableArea from '../atoms/ScrollableArea'
 import NodeContentRenderer from './NodeContentRenderer'
-import { getGroupColor } from '../../constants/colors'
 import { useTheme } from '../../store/ThemeContext'
-import type { MindMapNode, GroupPalette } from '../../types/mindmap'
+import type { MindMapNode } from '../../types/mindmap'
 
 interface DetailPanelProps {
   node: MindMapNode | null
@@ -21,10 +20,10 @@ interface DetailPanelProps {
  */
 const DetailPanel: React.FC<DetailPanelProps> = React.memo(
   ({ node, onClose, panelWidth = 420, isMobile = false }) => {
-    const { mode } = useTheme()
+    const { mode, getGroupPalette } = useTheme()
     if (!node) return null
 
-    const palette: GroupPalette = getGroupColor(node.group)
+    const palette = getGroupPalette(node.group)
     const hasEveryday = node.content.everydayExample
     const hasTip = node.content.quickTip
 

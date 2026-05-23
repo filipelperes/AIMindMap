@@ -1,13 +1,14 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react'
 import type { ThemeMode, ThemeColors } from '../constants/theme'
-import { darkTheme, lightTheme, getGroupThemeColor } from '../constants/theme'
+import { darkTheme, lightTheme, getGroupPaletteForTheme } from '../constants/theme'
+import type { GroupPalette } from '../types/mindmap'
 
 interface ThemeContextType {
   mode: ThemeMode
   colors: ThemeColors
   toggle: () => void
   setMode: (mode: ThemeMode) => void
-  getGroupColor: (group: number) => string
+  getGroupPalette: (group: number) => GroupPalette
   isDark: boolean
 }
 
@@ -45,8 +46,8 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     localStorage.setItem(STORAGE_KEY, newMode)
   }, [])
 
-  const getGroupColor = useCallback((group: number): string => {
-    return getGroupThemeColor(group, mode)
+  const getGroupPalette = useCallback((group: number): GroupPalette => {
+    return getGroupPaletteForTheme(group, mode)
   }, [mode])
 
   // Aplicar atributo data-theme no <html> para CSS variables
@@ -68,7 +69,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   }, [])
 
   return (
-    <ThemeContext.Provider value={{ mode, colors, toggle, setMode, getGroupColor, isDark: mode === 'dark' }}>
+    <ThemeContext.Provider value={{ mode, colors, toggle, setMode, getGroupPalette, isDark: mode === 'dark' }}>
       {children}
     </ThemeContext.Provider>
   )

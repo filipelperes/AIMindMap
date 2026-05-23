@@ -3,6 +3,8 @@
  * Use useTheme() hook para acessar o tema atual.
  */
 
+import type { GroupPalette } from '../types/mindmap'
+
 export type ThemeMode = 'dark' | 'light'
 
 export interface ThemeColors {
@@ -53,43 +55,8 @@ export const lightTheme: ThemeColors = {
   textOnAccent: '#FFFFFF',
 }
 
-export const themePalette = {
-  groups: {
-    1:  { dark: '#FF006E', light: '#D0005A' },
-    2:  { dark: '#00E676', light: '#00A857' },
-    3:  { dark: '#00B0FF', light: '#0088CC' },
-    4:  { dark: '#FFAB00', light: '#CC8900' },
-    5:  { dark: '#D500F9', light: '#AA00C7' },
-    6:  { dark: '#FF1744', light: '#CC0030' },
-    7:  { dark: '#00E5FF', light: '#00B3CC' },
-    8:  { dark: '#76FF03', light: '#54CC00' },
-    9:  { dark: '#FF9100', light: '#CC7400' },
-    10: { dark: '#EA80FC', light: '#C050E0' },
-    11: { dark: '#18FFFF', light: '#00CCCC' },
-    12: { dark: '#FFD740', light: '#CCAD00' },
-    13: { dark: '#FF6E40', light: '#CC4A20' },
-    14: { dark: '#B388FF', light: '#8855DD' },
-  } as Record<number, { dark: string; light: string }>,
-}
-
-/**
- * Obtém cor do grupo baseada no tema.
- */
-export function getGroupThemeColor(group: number, mode: ThemeMode): string {
-  const colors = themePalette.groups[group]
-  if (!colors) return mode === 'dark' ? '#FF006E' : '#D0005A'
-  return colors[mode]
-}
-
-export interface ThemeGroupPalette {
-  base: string
-  emissive: string
-  accent: string
-  label: string
-}
-
 /** Paletas dark (saturadas para fundo escuro) */
-const darkGroupColors: Record<number, ThemeGroupPalette> = {
+const darkGroupColors: Record<number, GroupPalette> = {
   1:  { base: '#FF006E', emissive: '#FF4081', accent: '#FF80AB', label: 'Fundamentos' },
   2:  { base: '#00E676', emissive: '#69F0AE', accent: '#B9F6CA', label: 'Engenharia de Prompt' },
   3:  { base: '#00B0FF', emissive: '#40C4FF', accent: '#80D8FF', label: 'RAG & Busca' },
@@ -108,7 +75,7 @@ const darkGroupColors: Record<number, ThemeGroupPalette> = {
 }
 
 /** Paletas light (suavizadas para fundo claro) — 3 cores distintas por grupo */
-const lightGroupColors: Record<number, ThemeGroupPalette> = {
+const lightGroupColors: Record<number, GroupPalette> = {
   1:  { base: '#D0005A', emissive: '#E8307A', accent: '#F0A0C0', label: 'Fundamentos' },
   2:  { base: '#00A857', emissive: '#30D878', accent: '#A0E8B0', label: 'Engenharia de Prompt' },
   3:  { base: '#0088CC', emissive: '#30A8E0', accent: '#A0D0F0', label: 'RAG & Busca' },
@@ -131,7 +98,7 @@ const lightGroupColors: Record<number, ThemeGroupPalette> = {
  * No light mode, as cores são suavizadas para melhor contraste,
  * cada uma com sua própria nuance de cor.
  */
-export function getGroupPaletteForTheme(group: number, mode: ThemeMode): ThemeGroupPalette {
+export function getGroupPaletteForTheme(group: number, mode: ThemeMode): GroupPalette {
   if (mode === 'dark') {
     return darkGroupColors[group] || darkGroupColors[1]
   }

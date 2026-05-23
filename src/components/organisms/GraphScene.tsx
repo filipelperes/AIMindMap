@@ -2,8 +2,6 @@ import React, { useRef, useState, useCallback, useEffect, useMemo } from 'react'
 import ForceGraph3D from 'react-force-graph-3d'
 import * as THREE from 'three'
 import { useTheme } from '../../store/ThemeContext'
-import { getGroupColor } from '../../constants/colors'
-import { getGroupPaletteForTheme } from '../../constants/theme'
 import { getSphereGeometry, getLabelTexture } from '../../utils/threeHelpers'
 import type { MindMapNode, GraphData, GroupPalette } from '../../types/mindmap'
 
@@ -120,7 +118,7 @@ const GraphScene: React.FC<GraphSceneProps> = React.memo(
   ({ data, selectedNodeId, onSelect }) => {
     const fgRef = useRef<any>(null!)
     const [hoveredNodeId, setHoveredNodeId] = useState<string | null>(null)
-    const { mode } = useTheme()
+    const { mode, getGroupPalette } = useTheme()
     const nodeObjectsRef = useRef<Map<string, THREE.Group>>(new Map())
     const orbitTimeRef = useRef(0)
     const [zoomLevel, setZoomLevel] = useState(1)
@@ -335,8 +333,7 @@ const GraphScene: React.FC<GraphSceneProps> = React.memo(
     const nodeThreeObject = useCallback(
       (node: any) => {
         const mNode = node as MindMapNode
-        const palette: GroupPalette = getGroupColor(mNode.group)
-        const themePalette = getGroupPaletteForTheme(mNode.group, mode)
+        const palette = getGroupPalette(mNode.group)
         const isSelected = mNode.id === selectedNodeId
         const isHovered = mNode.id === hoveredNodeId
 
@@ -373,10 +370,9 @@ const GraphScene: React.FC<GraphSceneProps> = React.memo(
         const titleX = 256
         const titleY = 180
 
-        // Layered shadows for 3D depth on the title text
-        const baseColor = mode === 'light' ? themePalette.base : palette.base
-        const emissiveColor = mode === 'light' ? themePalette.emissive : palette.emissive
-        const accentColor = mode === 'light' ? themePalette.accent : palette.accent
+        const baseColor = palette.base
+        const emissiveColor = palette.emissive
+        const accentColor = palette.accent
 
         // 1. Deep shadow layer (offset for 3D emboss effect)
         lctx.shadowColor = 'rgba(0,0,0,0.8)'
@@ -440,9 +436,9 @@ const GraphScene: React.FC<GraphSceneProps> = React.memo(
 
         const material = new THREE.MeshStandardMaterial({
           map: texture,
-          color: new THREE.Color(mode === 'light' ? themePalette.base : palette.base),
-          emissive: new THREE.Color(mode === 'light' ? themePalette.emissive : palette.emissive),
-          emissiveIntensity: mode === 'light' ? (isSelected ? 1.5 : 0.6) : (isSelected ? 3.5 : 2),
+          color: new THREE.Color(palette.base),
+          emissive: new THREE.Color(palette.emissive),
+          emissiveIntensity: mode === 'light' ? (isSelected ? 2.5 : 1.5) : (isSelected ? 3.5 : 2),
           emissiveMap: texture,
           metalness: 0.15,
           roughness: 0.25,
@@ -455,9 +451,9 @@ const GraphScene: React.FC<GraphSceneProps> = React.memo(
         // ── 2. SPRITE FLUTUANTE (TÍTULO FORA DA ESFERA — sempre facing camera) ──
         const spriteTexture = getLabelTexture({
           text: mNode.id,
-          color: mode === 'light' ? themePalette.accent : palette.accent,
+          color: palette.accent,
           fontSize: 42,
-          glowColor: mode === 'light' ? themePalette.emissive : palette.emissive,
+          glowColor: palette.emissive,
           glowSize: 10,
           textColor: mode === 'light' ? '#1A1A2E' : '#FFFFFF',
         })
@@ -548,7 +544,7 @@ const GraphScene: React.FC<GraphSceneProps> = React.memo(
 
         return group
       },
-      [selectedNodeId, hoveredNodeId, mode],
+      [selectedNodeId, hoveredNodeId, mode, getGroupPalette],
     )
 
     // ─── LINK RENDERING ───
@@ -563,7 +559,7 @@ const GraphScene: React.FC<GraphSceneProps> = React.memo(
           tgt?.id === hoveredNodeId
         return hl
           ? (mode === 'dark' ? '#ffffff' : '#6D28D9')
-          : (mode === 'dark' ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.12)')
+          : (mode === 'dark' ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.25)')
       },
       [selectedNodeId, hoveredNodeId, mode],
     )

@@ -96,7 +96,12 @@ describe('DetailPanel', () => {
       toggle: vi.fn(),
       setMode: vi.fn(),
       colors: {} as any,
-      getGroupColor: vi.fn(),
+      getGroupPalette: vi.fn().mockReturnValue({
+        base: '#FF006E',
+        emissive: '#FF4081',
+        accent: '#FF80AB',
+        label: 'Fundamentos',
+      }),
     } as any)
   })
 
@@ -215,7 +220,12 @@ describe('DetailPanel', () => {
         toggle: vi.fn(),
         setMode: vi.fn(),
         colors: {} as any,
-        getGroupColor: vi.fn(),
+        getGroupPalette: vi.fn().mockReturnValue({
+          base: '#FF006E',
+          emissive: '#FF4081',
+          accent: '#FF80AB',
+          label: 'Fundamentos',
+        }),
       } as any)
 
       const { container } = renderPanel(baseNode)
@@ -235,7 +245,12 @@ describe('DetailPanel', () => {
         toggle: vi.fn(),
         setMode: vi.fn(),
         colors: {} as any,
-        getGroupColor: vi.fn(),
+        getGroupPalette: vi.fn().mockReturnValue({
+          base: '#D0005A',
+          emissive: '#E8307A',
+          accent: '#F0A0C0',
+          label: 'Fundamentos',
+        }),
       } as any)
 
       const { container } = renderPanel(baseNode)

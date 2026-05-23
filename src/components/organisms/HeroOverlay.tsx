@@ -32,8 +32,8 @@ const HeroOverlay: React.FC<HeroOverlayProps> = React.memo(
         transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
         className="pointer-events-none absolute z-30"
         style={{
-          left: isMobile ? '5%' : '3rem',
-          top: isMobile ? '3rem' : '3rem',
+          left: isMobile ? '5%' : '17%',
+          top: isMobile ? '3.7rem' : '3rem',
           right: isMobile ? '5%' : 'auto',
           maxWidth: isMobile ? '90%' : 560,
         }}
@@ -52,7 +52,11 @@ const HeroOverlay: React.FC<HeroOverlayProps> = React.memo(
             }}
           >
             AI{' '}
-            <span className="animate-gradient-shift bg-gradient-to-r from-cyan-400 via-purple-500 to-pink-500 bg-clip-text text-transparent">
+            <span className={`animate-gradient-shift bg-clip-text text-transparent ${
+              mode === 'dark'
+                ? 'bg-gradient-to-r from-cyan-400 via-purple-500 to-pink-500'
+                : 'bg-gradient-to-r from-violet-600 via-purple-500 to-fuchsia-500'
+            }`}>
               MINDMAP
             </span>
           </h1>

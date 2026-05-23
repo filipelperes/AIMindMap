@@ -13,6 +13,7 @@ interface MainLayoutProps {
   onSelect: (id: string | null) => void;
   onClose: () => void;
   isMobile: boolean;
+  isMobileSidebarOpen?: boolean;
 }
 
 /**
@@ -25,7 +26,7 @@ interface MainLayoutProps {
  * 50 — DetailPanel
  */
 const MainLayout: React.FC<MainLayoutProps> = React.memo(
-  ({ data, selectedNodeId, selectedNode, onSelect, onClose, isMobile }) => {
+  ({ data, selectedNodeId, selectedNode, onSelect, onClose, isMobile, isMobileSidebarOpen }) => {
     const [mounted, setMounted] = useState(false);
 
     useEffect(() => {
@@ -43,7 +44,10 @@ const MainLayout: React.FC<MainLayoutProps> = React.memo(
       >
         {/* Camada 0: Fundo animado de partículas — fundo PRINCIPAL */}
         <div className="absolute inset-0 z-0">
-          <ParticleBackground opacity={0.7} dense />
+          <ParticleBackground
+            opacity={isMobile && isMobileSidebarOpen ? 0.3 : 1}
+            dense
+          />
         </div>
 
         {/* Camada 10: Grafo 3D com fundo transparente */}

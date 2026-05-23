@@ -1,30 +1,37 @@
 import React, { useMemo } from 'react'
 import { Canvas } from '@react-three/fiber'
 import StarField from '../molecules/StarField'
+import { useTheme } from '../../store/ThemeContext'
 
 interface ParticleBackgroundProps {
   opacity?: number
   dense?: boolean
 }
 
+const darkColors = ['#7C3AED', '#00FFF0', '#FF006E', '#00E676', '#FFAB00']
+const lightColors = ['#7C3AED', '#0088CC', '#D0005A', '#00A857', '#CC8900']
+
 const ParticleBackground: React.FC<ParticleBackgroundProps> = React.memo(
   ({ opacity = 1, dense = false }) => {
+    const { mode } = useTheme()
+
     const layers = useMemo(() => {
+      const c = mode === 'dark' ? darkColors : lightColors
       if (dense) {
         return [
-          { count: 3000, spread: 30, color: '#7C3AED', size: 0.02, speedX: 0.02, speedY: 0.015 },
-          { count: 2500, spread: 18, color: '#00FFF0', size: 0.03, speedX: 0.04, speedY: 0.03 },
-          { count: 1500, spread: 25, color: '#FF006E', size: 0.02, speedX: 0.03, speedY: 0.025 },
-          { count: 1000, spread: 35, color: '#00E676', size: 0.015, speedX: 0.025, speedY: 0.02 },
-          { count: 800, spread: 15, color: '#FFAB00', size: 0.025, speedX: 0.05, speedY: 0.04 },
+          { count: 3000, spread: 30, color: c[0], size: 0.02, speedX: 0.02, speedY: 0.015 },
+          { count: 2500, spread: 18, color: c[1], size: 0.03, speedX: 0.04, speedY: 0.03 },
+          { count: 1500, spread: 25, color: c[2], size: 0.02, speedX: 0.03, speedY: 0.025 },
+          { count: 1000, spread: 35, color: c[3], size: 0.015, speedX: 0.025, speedY: 0.02 },
+          { count: 800, spread: 15, color: c[4], size: 0.025, speedX: 0.05, speedY: 0.04 },
         ]
       }
       return [
-        { count: 2000, spread: 20, color: '#7C3AED', size: 0.015, speedX: 0.03, speedY: 0.02 },
-        { count: 1500, spread: 12, color: '#00FFF0', size: 0.025, speedX: 0.06, speedY: 0.05 },
-        { count: 500, spread: 18, color: '#FF006E', size: 0.015, speedX: 0.04, speedY: 0.03 },
+        { count: 2000, spread: 20, color: c[0], size: 0.015, speedX: 0.03, speedY: 0.02 },
+        { count: 1500, spread: 12, color: c[1], size: 0.025, speedX: 0.06, speedY: 0.05 },
+        { count: 500, spread: 18, color: c[2], size: 0.015, speedX: 0.04, speedY: 0.03 },
       ]
-    }, [dense])
+    }, [dense, mode])
 
     return (
       <div

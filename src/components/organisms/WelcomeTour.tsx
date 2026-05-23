@@ -56,13 +56,21 @@ const TOUR_STEPS: TourStep[] = [
   }
 ]
 
-const WelcomeTour: React.FC = React.memo(() => {
+interface WelcomeTourProps {
+  forceClose?: number
+}
+
+const WelcomeTour: React.FC<WelcomeTourProps> = React.memo(({ forceClose }) => {
   const [isOpen, setIsOpen] = useState(false)
   const [currentStep, setCurrentStep] = useState(0)
   const [hasCompleted, setHasCompleted] = useState(true)
   const { mode } = useTheme()
   const glowRef = useRef<HTMLDivElement>(null)
   const [glowPosition, setGlowPosition] = useState({ top: 0, left: 0, width: 0, height: 0 })
+
+  useEffect(() => {
+    if (forceClose && isOpen) completeTour()
+  }, [forceClose])
 
   useEffect(() => {
     const completed = localStorage.getItem(TOUR_KEY)
@@ -219,7 +227,7 @@ const WelcomeTour: React.FC = React.memo(() => {
             </div>
 
             <motion.div
-              className="mb-4 text-5xl"
+              className="mb-4 text-5xl text-center"
               animate={{ y: [0, -5, 0] }}
               transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
             >
@@ -227,7 +235,7 @@ const WelcomeTour: React.FC = React.memo(() => {
             </motion.div>
 
             <motion.h2
-              className="mb-2 text-2xl font-bold"
+              className="mb-2 text-2xl font-bold text-center"
               style={{ color: mode === 'dark' ? '#F0F4FF' : '#1A1A2E' }}
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
@@ -237,7 +245,7 @@ const WelcomeTour: React.FC = React.memo(() => {
             </motion.h2>
 
             <motion.p
-              className="mb-8 text-sm leading-relaxed"
+              className="mb-8 text-sm leading-relaxed text-center"
               style={{ color: mode === 'dark' ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)' }}
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}

@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { getLearningPath, getCurrentStep } from '../../data/map'
-import { getGroupColor } from '../../constants/colors'
+
 import ThemeToggle from '../atoms/ThemeToggle'
 import { useTheme } from '../../store/ThemeContext'
 import type { MindMapNode, GraphData } from '../../types/mindmap'
@@ -13,6 +13,8 @@ interface SidebarNavProps {
   onClose: () => void
   isMobile: boolean
   onExport?: () => void
+  forceCloseMobile?: number
+  onMobileOpenChange?: (open: boolean) => void
 }
 
 const TOTAL_STEPS = 15
@@ -29,8 +31,8 @@ const TOTAL_STEPS = 15
  * - Versão compacta para mobile (hamburger)
  */
 const SidebarNav: React.FC<SidebarNavProps> = React.memo(
-  ({ selectedNodeId, onSelect, onClose, isMobile, onExport }) => {
-    const { mode } = useTheme()
+  ({ selectedNodeId, onSelect, onClose, isMobile, onExport, forceCloseMobile, onMobileOpenChange }) => {
+    const { mode, getGroupPalette } = useTheme()
     const [isOpen, setIsOpen] = useState(!isMobile) // Desktop always open
     const steps = getLearningPath()
     const currentStep = getCurrentStep(selectedNodeId)
@@ -57,6 +59,16 @@ const SidebarNav: React.FC<SidebarNavProps> = React.memo(
       const prev = Math.max(currentStep - 1, 1)
       goToStep(prev)
     }, [currentStep, goToStep])
+
+    // Notify parent of mobile open state
+    useEffect(() => {
+      onMobileOpenChange?.(isMobile && isOpen)
+    }, [isMobile, isOpen, onMobileOpenChange])
+
+    // Force close from parent (ESC key in MindMapPage)
+    useEffect(() => {
+      if (forceCloseMobile && isMobile) setIsOpen(false)
+    }, [forceCloseMobile])
 
     // Keyboard shortcuts
     useEffect(() => {
@@ -171,7 +183,7 @@ const SidebarNav: React.FC<SidebarNavProps> = React.memo(
           )}
 
           {steps.map((node) => {
-            const palette = getGroupColor(node.group)
+            const palette = getGroupPalette(node.group)
             const isActive = node.id === selectedNodeId
             const isCompleted = (node.learningStep ?? 0) < currentStep
 

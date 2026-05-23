@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 import MainLayout from '../templates/MainLayout'
 import SidebarNav from '../organisms/SidebarNav'
 import WelcomeTour from '../organisms/WelcomeTour'
@@ -17,18 +17,8 @@ const MindMapPage: React.FC = React.memo(() => {
   const { selectedNodeId, selectedNode, selectNode, deselectNode } =
     useNodeSelection(graphData.nodes)
   const { isMobile } = useResponsiveLayout()
-  const canvasRef = useRef<HTMLDivElement>(null)
-
-  const handleSelect = useCallback(
-    (id: string | null) => {
-      selectNode(id)
-    },
-    [selectNode],
-  )
-
-  const handleClose = useCallback(() => {
-    deselectNode()
-  }, [deselectNode])
+  const [closeSignal, setCloseSignal] = useState(0)
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false)
 
   /**
    * Exporta screenshot do canvas 3D.
@@ -44,39 +34,45 @@ const MindMapPage: React.FC = React.memo(() => {
     link.click()
   }, [])
 
-  // Tecla 'E' para exportar screenshot
+  // Atalhos de teclado: ESC fecha modais, E exporta screenshot
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
-      if (e.key === 'e' || e.key === 'E') {
+      if (e.key === 'Escape') {
+        deselectNode()
+        setCloseSignal(t => t + 1)
+      } else if (e.key === 'e' || e.key === 'E') {
         handleExport()
       }
     }
     window.addEventListener('keydown', handler)
     return () => window.removeEventListener('keydown', handler)
-  }, [handleExport])
+  }, [deselectNode, handleExport])
 
   return (
-    <div ref={canvasRef} className="relative h-screen w-screen overflow-hidden">
+    <div className="relative h-screen w-screen overflow-hidden">
       {/* Sidebar de navegação */}
       <SidebarNav
         data={graphData}
         selectedNodeId={selectedNodeId}
-        onSelect={handleSelect}
-        onClose={handleClose}
+        onSelect={selectNode}
+        onClose={deselectNode}
         isMobile={isMobile}
         onExport={handleExport}
+        forceCloseMobile={closeSignal}
+        onMobileOpenChange={setIsMobileSidebarOpen}
       />
 
       {/* Welcome Tour — overlay de boas-vindas na primeira visita */}
-      <WelcomeTour />
+      <WelcomeTour forceClose={closeSignal} />
 
       {/* Layout principal com grafo 3D */}
       <MainLayout
+        isMobileSidebarOpen={isMobileSidebarOpen}
         data={graphData}
         selectedNodeId={selectedNodeId}
         selectedNode={selectedNode}
-        onSelect={handleSelect}
-        onClose={handleClose}
+        onSelect={selectNode}
+        onClose={deselectNode}
         isMobile={isMobile}
       />
     </div>
