@@ -37,8 +37,12 @@ const STARS_DEFAULT = 500
 const STARS_DENSE = 900
 
 // Colors palette for stars (subtle — mostly white with hints of color)
+// Dark mode: white/light stars on dark bg → high contrast
+// Light mode: dark stars on light bg → need darker hues for visibility
 const DARK_STAR_HUES = [0, 0, 0, 0, 0, 220, 280, 200, 160, 40]
-const LIGHT_STAR_HUES = [0, 0, 0, 0, 220, 280, 200, 160, 40]
+// Light mode uses darker hues so stars contrast against the light gradient bg.
+// Hue=0 means "neutral/dark" instead of white; rest use darker color variants.
+const LIGHT_STAR_HUES = [0, 0, 240, 280, 200, 340, 160, 40, 20, 300]
 
 // Cache radial gradients per star size to avoid re-creating every frame
 // Key: starSize, Value: CanvasGradient
@@ -51,8 +55,9 @@ function getStarGradient(
   ctx: CanvasRenderingContext2D,
   size: number,
   hue: number,
+  isDark: boolean,
 ): CanvasGradient {
-  const key = `${size}-${hue}`
+  const key = `${size}-${hue}-${isDark ? 'd' : 'l'}`
   const cached = gradientCache.get(key)
   if (cached) {
     // Move to end of access queue (LRU promotion)
@@ -67,18 +72,38 @@ function getStarGradient(
   const r = size * 4 // gradient radius is 4x star size for soft glow
   const gradient = ctx.createRadialGradient(0, 0, 0, 0, 0, r)
 
-  if (hue !== 0) {
-    // Colored star
-    gradient.addColorStop(0, `hsla(${hue}, 80%, 85%, 1)`)
-    gradient.addColorStop(0.15, `hsla(${hue}, 70%, 70%, 0.5)`)
-    gradient.addColorStop(0.4, `hsla(${hue}, 60%, 60%, 0.12)`)
-    gradient.addColorStop(1, `hsla(${hue}, 50%, 50%, 0)`)
+  if (isDark) {
+    // ── Dark mode: bright stars on dark background ──
+    if (hue !== 0) {
+      // Colored star — vibrant glow
+      gradient.addColorStop(0, `hsla(${hue}, 80%, 85%, 1)`)
+      gradient.addColorStop(0.15, `hsla(${hue}, 70%, 70%, 0.5)`)
+      gradient.addColorStop(0.4, `hsla(${hue}, 60%, 60%, 0.12)`)
+      gradient.addColorStop(1, `hsla(${hue}, 50%, 50%, 0)`)
+    } else {
+      // White star
+      gradient.addColorStop(0, 'rgba(255, 255, 255, 1)')
+      gradient.addColorStop(0.15, 'rgba(255, 255, 255, 0.6)')
+      gradient.addColorStop(0.4, 'rgba(255, 255, 255, 0.15)')
+      gradient.addColorStop(1, 'rgba(255, 255, 255, 0)')
+    }
   } else {
-    // White star
-    gradient.addColorStop(0, 'rgba(255, 255, 255, 1)')
-    gradient.addColorStop(0.15, 'rgba(255, 255, 255, 0.6)')
-    gradient.addColorStop(0.4, 'rgba(255, 255, 255, 0.15)')
-    gradient.addColorStop(1, 'rgba(255, 255, 255, 0)')
+    // ── Light mode: dark/subtle stars on light background ──
+    // Using significantly darker tones so stars actually contrast against
+    // the light gradient bg (#F0F4FF → #EAE6FF → #F5F0FF).
+    if (hue !== 0) {
+      // Colored star — deep, saturated tones for visibility on light bg
+      gradient.addColorStop(0, `hsla(${hue}, 70%, 22%, 1)`)
+      gradient.addColorStop(0.15, `hsla(${hue}, 60%, 18%, 0.6)`)
+      gradient.addColorStop(0.4, `hsla(${hue}, 50%, 15%, 0.18)`)
+      gradient.addColorStop(1, `hsla(${hue}, 40%, 12%, 0)`)
+    } else {
+      // Dark charcoal star for light bg — dark enough to be clearly visible
+      gradient.addColorStop(0, 'rgba(25, 25, 55, 1)')
+      gradient.addColorStop(0.15, 'rgba(25, 25, 55, 0.55)')
+      gradient.addColorStop(0.4, 'rgba(25, 25, 55, 0.18)')
+      gradient.addColorStop(1, 'rgba(25, 25, 55, 0)')
+    }
   }
 
   // Evict oldest entry if at capacity (LRU)
@@ -99,13 +124,15 @@ function getStarGradient(
  */
 const ParticleBackground: React.FC<ParticleBackgroundProps> = React.memo(
   ({ opacity = 1, dense = false }) => {
-    const { mode } = useTheme()
+    const { mode, isDark } = useTheme()
     const canvasRef = useRef<HTMLCanvasElement>(null)
     const animRef = useRef(0)
     const starsRef = useRef<Star[]>([])
     const lastTimeRef = useRef(0)
     const opacityRef = useRef(opacity)
     opacityRef.current = opacity
+    const isDarkRef = useRef(isDark)
+    isDarkRef.current = isDark
     const offsetRef = useRef({ x: 0, y: 0 })
 
     // ── Star generation — sparse, varied, star-like ──
@@ -207,6 +234,8 @@ const ParticleBackground: React.FC<ParticleBackgroundProps> = React.memo(
         off.x += delta * 0.30
         off.y += delta * 0.16
 
+        const darkModeNow = isDarkRef.current
+
         for (let i = 0; i < stars.length; i++) {
           const star = stars[i]
 
@@ -225,35 +254,50 @@ const ParticleBackground: React.FC<ParticleBackgroundProps> = React.memo(
 
           // ── Twinkle ──
           const twinkle = 0.5 + 0.5 * Math.sin(time * 0.001 * star.twinkleSpeed + star.twinklePhase)
-          const starOpacity = star.baseOpacity * twinkle
+
+          // Light mode needs higher opacity and larger size to be visible
+          // against the bright gradient background (#F0F4FF → #EAE6FF).
+          const modeOpacityScale = darkModeNow ? 1.0 : 1.8
+          const modeSizeScale = darkModeNow ? 1.0 : 1.6
+          const starOpacity = star.baseOpacity * twinkle * modeOpacityScale
 
           // ── Render star with glow ──
-          const finalOpacity = opacityRef.current * starOpacity
+          const finalOpacity = Math.min(opacityRef.current * starOpacity, 1)
 
           // Skip nearly invisible stars
           if (finalOpacity < 0.01) continue
 
-          const screenSize = star.size * dpr
+          const screenSize = star.size * dpr * modeSizeScale
           const cx = sx * dpr
           const cy = sy * dpr
 
           // ── Draw glow (radial gradient) ──
           ctx.save()
           ctx.translate(cx, cy)
-          const gradient = getStarGradient(ctx, star.size, star.hue)
+          const gradient = getStarGradient(ctx, star.size, star.hue, darkModeNow)
           const glowRadius = screenSize * 4
-          ctx.globalAlpha = finalOpacity * 0.35
+          ctx.globalAlpha = finalOpacity * (darkModeNow ? 0.35 : 0.55)
           ctx.fillStyle = gradient
           ctx.beginPath()
           ctx.arc(0, 0, glowRadius, 0, Math.PI * 2)
           ctx.fill()
 
           // ── Draw star core (brighter center) ──
-          ctx.globalAlpha = finalOpacity
+          // Note: globalAlpha already handles opacity — fillStyle uses alpha=1
+          // (solid) to avoid double-alpha multiplication that would cut visibility.
           if (star.hue !== 0) {
-            ctx.fillStyle = `hsla(${star.hue}, 70%, 75%, ${finalOpacity})`
+            // Colored star core — lower lightness on light bg for contrast
+            const lightness = darkModeNow ? 75 : 18
+            ctx.globalAlpha = finalOpacity
+            ctx.fillStyle = `hsla(${star.hue}, 70%, ${lightness}%, 1)`
+          } else if (darkModeNow) {
+            // White star core on dark bg
+            ctx.globalAlpha = finalOpacity
+            ctx.fillStyle = 'rgb(255, 255, 255)'
           } else {
-            ctx.fillStyle = `rgba(255, 255, 255, ${finalOpacity})`
+            // Dark star core on light bg (deep charcoal)
+            ctx.globalAlpha = finalOpacity
+            ctx.fillStyle = 'rgb(25, 25, 55)'
           }
           ctx.beginPath()
           ctx.arc(0, 0, screenSize, 0, Math.PI * 2)
