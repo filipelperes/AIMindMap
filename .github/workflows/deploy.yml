@@ -1,28 +1,53 @@
-name: Deploy to GitHub Pages
+name: 🚀 Deploy to GitHub Pages
 
 on:
   push:
     branches:
       - main
 
+  # Enables manual deploy as well
+  workflow_dispatch:
+
+# Cancel in-progress runs on the same branch
+concurrency:
+  group: "pages-${{ github.ref }}"
+  cancel-in-progress: true
+
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-    steps:
-      - uses: actions/checkout@v4
+      pages: write
+      id-token: write
 
-      - uses: actions/setup-node@v4
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+
+      - name: ⚡ Setup Node.js
+        uses: actions/setup-node@v4
         with:
           node-version: 20
+          cache: 'npm'
 
-      - run: npm ci
+      - name: 📦 Install dependencies
+        run: npm ci
 
-      - run: npm run build
+      - name: 🔨 Build
+        run: npm run build
 
-      - uses: peaceiris/actions-gh-pages@v3
+      - name: 🚀 Deploy to GitHub Pages (branch gh-pages)
+        uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./dist
           publish_branch: gh-pages
+          # Preserve CNAME history (if any)
+          keep_files: false
+          # More descriptive commit message
+          full_commit_message: |
+            deploy: ${{ github.event.head_commit.message || 'manual deploy' }}
+
+            SHA: ${{ github.sha }}
+            triggered by: ${{ github.actor }}
