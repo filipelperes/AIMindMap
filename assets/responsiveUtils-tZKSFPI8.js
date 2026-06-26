@@ -1,0 +1,1 @@
+var e={mobile:640,tablet:768,desktop:1024};function t(t){return t<e.mobile?`mobile`:t<e.desktop?`tablet`:`desktop`}function n(t){return t<e.tablet}function r(t){return t<e.mobile?`100%`:t<e.tablet?`90%`:t<e.desktop?380:420}function i(t){return t<e.tablet?1.3:1}export{n as i,i as n,r,t};

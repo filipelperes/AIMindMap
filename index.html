@@ -1,12 +1,11 @@
 <!doctype html>
-<html lang="pt-BR">
+<html lang="en-US" data-theme="dark">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Explore AI Engineering em 3D: LLMs, RAG, Agentes, Fine-Tuning, System Design e muito mais. Mindmap interativo com 14 tópicos." />
+    <meta name="description" content="Explore AI Engineering in 3D: LLMs, RAG, Agents, Fine-Tuning, System Design and more. Interactive mind map with 14 topics." />
     <meta name="keywords" content="AI Engineering, LLM, RAG, Fine-Tuning, AI Agents, Machine Learning, Deep Learning, ChatGPT, AI MindMap" />
-    <meta name="theme-color" content="#080B1A" media="(prefers-color-scheme: dark)" />
-    <meta name="theme-color" content="#F0F4FF" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#080B1A" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
     <meta name="application-name" content="AI MindMap" />
@@ -15,14 +14,38 @@
     <link rel="icon" type="image/svg+xml" href="favicon.svg" />
     <link rel="manifest" href="manifest.webmanifest" />
     <link rel="apple-touch-icon" href="favicon.svg" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <title>AI MINDMAP — Mapa Interativo de AI Engineering</title>
-    <script type="module" crossorigin src="/AIMindMap/assets/index-BuOZ5qtg.js"></script>
+    <!--
+      Prevent theme flash: sync data-theme before React hydrates.
+      Reads the persisted preference from localStorage; falls back to
+      system preference or 'dark' (default).
+    -->
+    <script>
+      (function() {
+        try {
+          var theme = localStorage.getItem('aimindmap-theme');
+          if (!theme) {
+            theme = window.matchMedia('(prefers-color-scheme: light)').matches
+              ? 'light'
+              : 'dark';
+          }
+          document.documentElement.setAttribute('data-theme', theme);
+          var meta = document.querySelector('meta[name="theme-color"]');
+          if (meta) {
+            meta.setAttribute('content', theme === 'dark' ? '#080B1A' : '#F0F4FF');
+          }
+        } catch (e) {
+          document.documentElement.setAttribute('data-theme', 'dark');
+        }
+      })();
+    </script>
+    <title>AI MINDMAP — Interactive AI Engineering Mind Map</title>
+    <script type="module" crossorigin src="/AIMindMap/assets/index-CVo548j3.js"></script>
     <link rel="modulepreload" crossorigin href="/AIMindMap/assets/rolldown-runtime-Cyuzqnbw.js">
-    <link rel="modulepreload" crossorigin href="/AIMindMap/assets/force-graph-DtLc9Rx_.js">
-    <link rel="modulepreload" crossorigin href="/AIMindMap/assets/three-Dj2uJl4x.js">
-    <link rel="stylesheet" crossorigin href="/AIMindMap/assets/index-9VOAEqDF.css">
+    <link rel="modulepreload" crossorigin href="/AIMindMap/assets/three-zN2eZO2v.js">
+    <link rel="modulepreload" crossorigin href="/AIMindMap/assets/force-graph-BfUMT9dO.js">
+    <link rel="modulepreload" crossorigin href="/AIMindMap/assets/motion-CN14YARN.js">
+    <link rel="modulepreload" crossorigin href="/AIMindMap/assets/i18n-frqr5H55.js">
+    <link rel="stylesheet" crossorigin href="/AIMindMap/assets/index-BzaI3v9h.css">
   <link rel="manifest" href="/AIMindMap/manifest.webmanifest"><script id="vite-plugin-pwa:register-sw" src="/AIMindMap/registerSW.js"></script></head>
   <body>
     <div id="root"></div>
