@@ -1,6 +1,3 @@
-export { default as NodeWithLabel } from './NodeWithLabel'
-export { default as GraphLink } from './GraphLink'
-export { default as StarField } from './StarField'
 export { default as SectionTextBody } from './SectionTextBody'
 export { default as SectionConceptList } from './SectionConceptList'
 export { default as SectionCodeBlock } from './SectionCodeBlock'

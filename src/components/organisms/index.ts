@@ -1,6 +1,5 @@
 export { default as NodeContentRenderer } from './NodeContentRenderer'
 export { default as ParticleBackground } from './ParticleBackground'
-export { default as ForceSimulation } from './ForceSimulation'
 export { default as GraphScene } from './GraphScene'
 export { default as DetailPanel } from './DetailPanel'
 export { default as HeroOverlay } from './HeroOverlay'
