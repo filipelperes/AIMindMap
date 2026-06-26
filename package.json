@@ -8,26 +8,31 @@
     "build": "tsc -b && vite build",
     "deploy": "gh-pages -d dist -b gh-pages --no-history ",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "i18n:extract": "npx i18next-parser",
+    "i18n:status": "i18next-cli status",
+    "i18n:sort": "npx sort-json src/i18n/locales/*/translation.json",
+    "i18n:types": "i18next-cli types"
   },
   "engines": {
     "node": ">=18",
     "bun": ">=1.0"
   },
   "dependencies": {
-    "@react-three/drei": "^10.7.7",
-    "@react-three/fiber": "^9.6.1",
-    "@tailwindcss/vite": "^4.3.0",
     "d3-force-3d": "^3.0.6",
+    "date-fns": "^4.4.0",
     "framer-motion": "^12.40.0",
+    "i18next": "^26.3.1",
+    "i18next-browser-languagedetector": "^8.2.1",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
     "react-force-graph-3d": "^1.29.1",
-    "tailwindcss": "^4.3.0",
+    "react-i18next": "^17.0.8",
     "three": "^0.184.0"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
+    "@tailwindcss/vite": "^4.3.0",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
     "@types/node": "^24.12.3",
@@ -40,7 +45,11 @@
     "eslint-plugin-react-refresh": "^0.5.2",
     "gh-pages": "^6.3.0",
     "globals": "^17.6.0",
+    "i18next-cli": "^1.64.1",
+    "tailwindcss": "^4.3.0",
+    "i18next-parser": "^9.4.0",
     "jsdom": "^29.1.1",
+    "sort-json": "^2.0.1",
     "typescript": "~6.0.2",
     "typescript-eslint": "^8.59.2",
     "vite": "^8.0.12",

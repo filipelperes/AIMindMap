@@ -1,36 +1,43 @@
 import React, { Suspense } from 'react'
+import { useTranslation } from 'react-i18next'
 import { ThemeProvider } from './store/ThemeContext'
+import { LocaleProvider } from './i18n/LocaleContext'
 
 /**
- * Ponto de entrada da aplicação.
- * ThemeProvider encapsula todo o app para dark/light mode.
- * GraphScene é lazy-loaded via code splitting.
+ * Application entry point.
+ * ThemeProvider wraps the entire app for dark/light mode.
+ * LocaleProvider enables language switching and user-level date/time locale.
+ * GraphScene is lazy-loaded via code splitting.
  */
 const MindMapPage = React.lazy(() => import('./components/pages/MindMapPage'))
 
 /**
- * Loading fallback enquanto o chunk 3D carrega.
+ * Loading fallback while the 3D chunk loads.
  */
-const LoadingFallback: React.FC = React.memo(() => (
-  <div
-    className="flex h-screen w-screen items-center justify-center"
-    style={{ background: '#080B1A' }}
-  >
-    <div className="text-center">
-      <div className="mb-4 text-4xl animate-pulse">🧠</div>
-      <div className="text-sm text-zinc-500">Carregando universo AI...</div>
+const LoadingFallback: React.FC = React.memo(() => {
+  const { t } = useTranslation()
+  return (
+    <div
+      className="flex h-screen w-screen items-center justify-center bg-[var(--bg-primary)]"
+    >
+      <div className="text-center">
+        <div className="mb-4 text-4xl animate-pulse">🧠</div>
+        <div className="text-sm text-zinc-500">{t('app.loading')}</div>
+      </div>
     </div>
-  </div>
-))
+  )
+})
 
 LoadingFallback.displayName = 'LoadingFallback'
 
 export default function App() {
   return (
     <ThemeProvider>
-      <Suspense fallback={<LoadingFallback />}>
-        <MindMapPage />
-      </Suspense>
+      <LocaleProvider>
+        <Suspense fallback={<LoadingFallback />}>
+          <MindMapPage />
+        </Suspense>
+      </LocaleProvider>
     </ThemeProvider>
   )
 }

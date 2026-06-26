@@ -1,0 +1,118 @@
+{
+  "app": {
+    "loading": "Carregando universo 3D..."
+  },
+  "closeButton": {
+    "ariaLabel": "Fechar"
+  },
+  "theme": {
+    "toggleDark": "Alternar para modo claro",
+    "toggleLight": "Alternar para modo escuro",
+    "titleDark": "Modo Claro",
+    "titleLight": "Modo Escuro"
+  },
+  "codeBlock": {
+    "copiedAriaLabel": "Copiado!",
+    "copyAriaLabel": "Copiar código",
+    "copied": "Copiado!",
+    "copy": "Copiar"
+  },
+  "detailPanel": {
+    "step": "Passo {{step}}",
+    "quickTip": "Dica Rápida",
+    "everydayExample": "Exemplo do Dia a Dia"
+  },
+  "graphScene": {
+    "zoomLevel": "Zoom: {{level}}x",
+    "exploreHint": "Explore — clique em uma molécula ou use ← → no menu",
+    "mounting": "Montando universo 3D...",
+    "zoomIn": "Ampliar",
+    "zoomOut": "Reduzir",
+    "reset": "Centralizar"
+  },
+  "hero": {
+    "subtitle": "Um mapa 3D interativo do ecossistema de Engenharia de IA.",
+    "subtitle2": "Cada molécula é um tópico. Gire, clique, explore.",
+    "learningPath": "Trilha de Aprendizado",
+    "more_one": "+ {{count}} tópico",
+    "more_many": "+ {{count}} tópicos",
+    "more_other": "+ {{count}} tópicos",
+    "sections": {
+      "topics": {
+        "label": "14 Tópicos",
+        "desc": "Fundamentos à Produção"
+      },
+      "stepByStep": {
+        "label": "Passo a Passo",
+        "desc": "Roteiro de aprendizado"
+      },
+      "qa": {
+        "label": "100+ Perguntas",
+        "desc": "Questões de entrevista"
+      },
+      "code": {
+        "label": "50+ Códigos",
+        "desc": "Exemplos práticos"
+      }
+    }
+  },
+  "sidebar": {
+    "title": "AI MindMap",
+    "exportAriaLabel": "Exportar captura",
+    "previous": "Anterior",
+    "step": "Passo {{current}} / {{total}}",
+    "next": "Próximo",
+    "overview": "← Visão Geral",
+    "footerNav": "← → Navegar passos",
+    "footerZoom": "+ - Zoom  •  R Centralizar",
+    "hamburgerAriaLabel": "Abrir navegação"
+  },
+  "tour": {
+    "skip": "Pular",
+    "previous": "Voltar",
+    "stepCounter": "{{current}} de {{total}}",
+    "start": "Começar Exploração",
+    "next": "Avançar",
+    "steps": {
+      "0": {
+        "title": "Bem-vindo ao AI MindMap",
+        "description": "Explore conceitos de Engenharia de IA em um universo 3D interativo. Clique em qualquer nó para mergulhar."
+      },
+      "1": {
+        "title": "Navegação",
+        "description": "Use a barra lateral para navegar por 14 tópicos ou clique nas moléculas diretamente na cena 3D."
+      },
+      "2": {
+        "title": "O Gráfico 3D",
+        "description": "Arraste para girar a cena. Role para ampliar. Cada molécula flutua com sua própria personalidade."
+      },
+      "3": {
+        "title": "Painel de Detalhes",
+        "description": "Clique em qualquer nó para abrir o painel com explicações, exemplos de código, prós/contras e perguntas."
+      },
+      "4": {
+        "title": "Trilha de Aprendizado",
+        "description": "Os tópicos são ordenados por passo de aprendizado. Siga a sequência ou navegue livremente."
+      },
+      "5": {
+        "title": "Atalhos & Tema",
+        "description": "Teclado: ← → para passos, +/- para zoom, R para centralizar, E para exportar. Alterne tema na barra lateral."
+      },
+      "6": {
+        "title": "Pronto? Vamos Explorar!",
+        "description": "Tudo configurado. Clique em uma molécula, siga a trilha e torne-se um Engenheiro de IA."
+      }
+    }
+  },
+  "mindmapPage": {
+    "exportFilename": "mindmap-{{date}}"
+  },
+  "locale": {
+    "languageLabel": "Idioma",
+    "dateFormat": "Formato de Data",
+    "localeDefault": "Padrão do Idioma ({{format}})",
+    "isoFormat": "ISO ({{format}})",
+    "usFormat": "EUA ({{format}})",
+    "euFormat": "Europa ({{format}})"
+  }
+}
