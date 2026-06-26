@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import React from 'react'
 import { render, fireEvent, screen } from '@testing-library/react'
@@ -42,7 +43,7 @@ describe('ThemeToggle', () => {
     vi.clearAllMocks()
   })
 
-  it('renders sun icon when mode is dark', () => {
+  it('renders both sun and moon icons (CSS-controlled visibility via dark: variant)', () => {
     const toggle = vi.fn()
     vi.mocked(useTheme).mockReturnValue({ mode: 'dark', toggle } as any)
 
@@ -51,26 +52,36 @@ describe('ThemeToggle', () => {
     const button = screen.getByRole('button')
     expect(button).toBeInTheDocument()
 
-    // Sun icon contains a <circle> element
-    const circle = document.querySelector('svg circle')
-    expect(circle).toBeInTheDocument()
+    // Both SVGs are always rendered — Tailwind dark: variant controls visibility
+    const allSvgs = document.querySelectorAll('button svg')
+    expect(allSvgs).toHaveLength(2)
+
+    // First SVG = Sun icon (has <circle>)
+    const sunCircle = document.querySelector('svg circle')
+    expect(sunCircle).toBeInTheDocument()
+    // Sun has rotation animation classes
+    expect(allSvgs[0].getAttribute('class')).toContain('dark:-rotate-90')
+    expect(allSvgs[0].getAttribute('class')).toContain('dark:scale-0')
+
+    // Second SVG = Moon icon (has <path>, no <circle>)
+    const moonPath = document.querySelector('svg path')
+    expect(moonPath).toBeInTheDocument()
+    // Moon has rotation animation classes
+    expect(allSvgs[1].getAttribute('class')).toContain('dark:rotate-0')
+    expect(allSvgs[1].getAttribute('class')).toContain('dark:scale-100')
   })
 
-  it('renders moon icon when mode is light', () => {
+  it('both SVGs have aria-hidden="true" for accessibility', () => {
     const toggle = vi.fn()
-    vi.mocked(useTheme).mockReturnValue({ mode: 'light', toggle } as any)
+    vi.mocked(useTheme).mockReturnValue({ mode: 'dark', toggle } as any)
 
     render(<ThemeToggle />)
 
-    const button = screen.getByRole('button')
-    expect(button).toBeInTheDocument()
-
-    // Moon icon has a <path> but no <circle>
-    const path = document.querySelector('svg path')
-    expect(path).toBeInTheDocument()
-
-    const circle = document.querySelector('svg circle')
-    expect(circle).not.toBeInTheDocument()
+    const svgs = document.querySelectorAll('button svg')
+    expect(svgs).toHaveLength(2)
+    svgs.forEach(svg => {
+      expect(svg).toHaveAttribute('aria-hidden', 'true')
+    })
   })
 
   it('calls toggle function on click', () => {
@@ -83,7 +94,7 @@ describe('ThemeToggle', () => {
     expect(toggle).toHaveBeenCalledTimes(1)
   })
 
-  it('shows correct aria-label in dark mode ("Mudar para tema claro")', () => {
+  it('shows correct aria-label in dark mode ("Switch to light mode")', () => {
     vi.mocked(useTheme).mockReturnValue({
       mode: 'dark',
       toggle: vi.fn(),
@@ -92,11 +103,11 @@ describe('ThemeToggle', () => {
     render(<ThemeToggle />)
 
     expect(
-      screen.getByRole('button', { name: /Mudar para tema claro/i }),
+      screen.getByRole('button', { name: /Switch to light mode/i }),
     ).toBeInTheDocument()
   })
 
-  it('shows correct aria-label in light mode ("Mudar para tema escuro")', () => {
+  it('shows correct aria-label in light mode ("Switch to dark mode")', () => {
     vi.mocked(useTheme).mockReturnValue({
       mode: 'light',
       toggle: vi.fn(),
@@ -105,7 +116,7 @@ describe('ThemeToggle', () => {
     render(<ThemeToggle />)
 
     expect(
-      screen.getByRole('button', { name: /Mudar para tema escuro/i }),
+      screen.getByRole('button', { name: /Switch to dark mode/i }),
     ).toBeInTheDocument()
   })
 
@@ -118,10 +129,8 @@ describe('ThemeToggle', () => {
     render(<ThemeToggle />)
 
     const button = screen.getByRole('button')
-    expect(button).toHaveStyle({
-      backgroundColor: 'rgba(255,255,255,0.08)',
-      color: '#F0F4FF',
-    })
+    expect(button).toHaveClass('dark:bg-white/8')
+    expect(button).toHaveClass('text-text-primary')
   })
 
   it('applies correct background colour based on mode (light)', () => {
@@ -133,10 +142,8 @@ describe('ThemeToggle', () => {
     render(<ThemeToggle />)
 
     const button = screen.getByRole('button')
-    expect(button).toHaveStyle({
-      backgroundColor: 'rgba(0,0,0,0.06)',
-      color: '#1A1A2E',
-    })
+    expect(button).toHaveClass('bg-black/6')
+    expect(button).toHaveClass('text-text-primary')
   })
 })
 
@@ -146,9 +153,9 @@ describe('ThemeToggle', () => {
 
 describe('Badge', () => {
   it('renders label text', () => {
-    render(<Badge label="Fundamentos" baseColor="#FF006E" />)
+    render(<Badge label="Foundations" baseColor="#FF006E" />)
 
-    expect(screen.getByText('Fundamentos')).toBeInTheDocument()
+    expect(screen.getByText('Foundations')).toBeInTheDocument()
   })
 
   it('renders with a given base colour', () => {
@@ -210,11 +217,11 @@ describe('Badge', () => {
 // ===========================================================================
 
 describe('CloseButton', () => {
-  it('renders with default aria-label "Fechar"', () => {
+  it('renders with default aria-label "Close"', () => {
     render(<CloseButton onClick={vi.fn()} />)
 
     expect(
-      screen.getByRole('button', { name: 'Fechar' }),
+      screen.getByRole('button', { name: 'Close' }),
     ).toBeInTheDocument()
   })
 
@@ -527,18 +534,18 @@ describe('EarlyReturnPattern', () => {
     clearRegistry()
 
     const section = {
-      title: 'Título Fallback',
+      title: 'Fallback Title',
       type: 'overview' as const,
-      body: 'Conteúdo do corpo quando não há renderizador registrado.',
+      body: 'Body content when no renderer is registered.',
     }
 
     const { container } = render(
       <NodeContentRenderer section={section} groupColor="#FF006E" />,
     )
 
-    expect(container.textContent).toContain('Título Fallback')
+    expect(container.textContent).toContain('Fallback Title')
     expect(container.textContent).toContain(
-      'Conteúdo do corpo quando não há renderizador registrado.',
+      'Body content when no renderer is registered.',
     )
   })
 
@@ -546,7 +553,7 @@ describe('EarlyReturnPattern', () => {
     clearRegistry()
 
     const section = {
-      title: 'Apenas Título',
+      title: 'Title Only',
       type: 'overview' as const,
       // body is intentionally undefined
     }
@@ -555,7 +562,7 @@ describe('EarlyReturnPattern', () => {
       <NodeContentRenderer section={section} groupColor="#00E676" />,
     )
 
-    expect(container.textContent).toContain('Apenas Título')
+    expect(container.textContent).toContain('Title Only')
     // body is undefined → the <p> should be empty / not contain extra text
   })
 
@@ -580,5 +587,216 @@ describe('EarlyReturnPattern', () => {
     )
 
     expect(container.textContent).toContain('Custom: My Custom Section')
+  })
+})
+
+// ===========================================================================
+// Additional edge-case tests
+// ===========================================================================
+
+describe('ThemeToggle — additional', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
+  it('has correct title attribute in dark mode', () => {
+    vi.mocked(useTheme).mockReturnValue({ mode: 'dark', toggle: vi.fn() } as any)
+    render(<ThemeToggle />)
+    const button = screen.getByRole('button')
+    // translation: theme.titleDark → "Light Mode" (describes the mode to switch TO)
+    expect(button).toHaveAttribute('title', 'Light Mode')
+  })
+
+  it('has correct title attribute in light mode', () => {
+    vi.mocked(useTheme).mockReturnValue({ mode: 'light', toggle: vi.fn() } as any)
+    render(<ThemeToggle />)
+    const button = screen.getByRole('button')
+    // translation: theme.titleLight → "Dark Mode" (describes the mode to switch TO)
+    expect(button).toHaveAttribute('title', 'Dark Mode')
+  })
+
+  it('applies hover and active CSS classes', () => {
+    vi.mocked(useTheme).mockReturnValue({ mode: 'dark', toggle: vi.fn() } as any)
+    render(<ThemeToggle />)
+    const button = screen.getByRole('button')
+    expect(button.className).toContain('hover:scale-110')
+    expect(button.className).toContain('active:scale-95')
+  })
+
+  it('renders sun icon with correct SVG attributes in dark mode', () => {
+    vi.mocked(useTheme).mockReturnValue({ mode: 'dark', toggle: vi.fn() } as any)
+    render(<ThemeToggle />)
+    const svg = document.querySelector('svg')
+    expect(svg).toHaveAttribute('width', '18')
+    expect(svg).toHaveAttribute('height', '18')
+    expect(svg).toHaveAttribute('viewBox', '0 0 24 24')
+  })
+
+  it('applies shrink-0 to prevent flex shrinking', () => {
+    vi.mocked(useTheme).mockReturnValue({ mode: 'dark', toggle: vi.fn() } as any)
+    render(<ThemeToggle />)
+    const button = screen.getByRole('button')
+    expect(button.className).toContain('shrink-0')
+  })
+
+  it('applies hover background variant classes', () => {
+    vi.mocked(useTheme).mockReturnValue({ mode: 'dark', toggle: vi.fn() } as any)
+    render(<ThemeToggle />)
+    const button = screen.getByRole('button')
+    expect(button.className).toContain('hover:dark:bg-white/15')
+    expect(button.className).toContain('hover:bg-black/15')
+  })
+})
+
+describe('Badge — additional', () => {
+  it('renders without glowColor prop', () => {
+    render(<Badge label="NoGlow" baseColor="#FF006E" />)
+    expect(screen.getByText('NoGlow')).toBeInTheDocument()
+  })
+
+  it('renders with empty label', () => {
+    const { container } = render(<Badge label="" baseColor="#00B0FF" />)
+    // The outermost span is the badge container
+    const badges = container.querySelectorAll('.inline-flex')
+    expect(badges.length).toBeGreaterThanOrEqual(1)
+    // Verify the badge contains a ColorDot with role="img"
+    const dot = container.querySelector('span[role="img"]')
+    expect(dot).toBeInTheDocument()
+  })
+
+  it('renders multiple badges independently', () => {
+    render(
+      <div>
+        <Badge label="First" baseColor="#FF006E" />
+        <Badge label="Second" baseColor="#00E676" />
+      </div>,
+    )
+    expect(screen.getByText('First')).toBeInTheDocument()
+    expect(screen.getByText('Second')).toBeInTheDocument()
+  })
+})
+
+describe('CloseButton — additional', () => {
+  it('renders with default size 32 when no size prop provided', () => {
+    render(<CloseButton onClick={vi.fn()} />)
+    const button = screen.getByRole('button')
+    expect(button).toHaveStyle({ width: '32px', height: '32px' })
+  })
+
+  it('can be clicked multiple times', () => {
+    const onClick = vi.fn()
+    render(<CloseButton onClick={onClick} />)
+    fireEvent.click(screen.getByRole('button'))
+    fireEvent.click(screen.getByRole('button'))
+    fireEvent.click(screen.getByRole('button'))
+    expect(onClick).toHaveBeenCalledTimes(3)
+  })
+})
+
+describe('IconButton — additional', () => {
+  it('renders complex children (nested elements)', () => {
+    render(
+      <IconButton onClick={vi.fn()} ariaLabel="Complex">
+        <span data-testid="inner">
+          <strong>X</strong>
+        </span>
+      </IconButton>,
+    )
+    expect(screen.getByTestId('inner')).toBeInTheDocument()
+    expect(screen.getByText('X')).toBeInTheDocument()
+  })
+
+  it('renders without className prop', () => {
+    render(
+      <IconButton onClick={vi.fn()} ariaLabel="No class">
+        <span>X</span>
+      </IconButton>,
+    )
+    const button = screen.getByRole('button')
+    // Should still have base classes
+    expect(button.className).toContain('rounded-full')
+  })
+})
+
+describe('contentRegistry — additional', () => {
+  afterEach(() => {
+    clearRegistry()
+  })
+
+  it('supports multiple register-clear cycles', () => {
+    const C1: React.FC<SectionRendererProps> = () => React.createElement('div', null, 'c1')
+    registerRenderer('test', C1)
+    expect(getRenderer('test')).toBe(C1)
+
+    clearRegistry()
+    expect(getRenderer('test')).toBeUndefined()
+
+    const C2: React.FC<SectionRendererProps> = () => React.createElement('div', null, 'c2')
+    registerRenderer('test', C2)
+    expect(getRenderer('test')).toBe(C2)
+  })
+
+  it('registerRenderer with multiple types simultaneously', () => {
+    const Comp: React.FC<SectionRendererProps> = () => React.createElement('div', null, 'x')
+    registerRenderer('a', Comp)
+    registerRenderer('b', Comp)
+    registerRenderer('c', Comp)
+    expect(getRegisteredTypes()).toHaveLength(3)
+    expect(getRegisteredTypes()).toEqual(expect.arrayContaining(['a', 'b', 'c']))
+  })
+
+  it('getRenderer returns different components for different types', () => {
+    const CA: React.FC<SectionRendererProps> = () => React.createElement('div', null, 'A')
+    const CB: React.FC<SectionRendererProps> = () => React.createElement('div', null, 'B')
+    registerRenderer('type-a', CA)
+    registerRenderer('type-b', CB)
+    expect(getRenderer('type-a')).toBe(CA)
+    expect(getRenderer('type-b')).toBe(CB)
+    expect(getRenderer('type-a')).not.toBe(getRenderer('type-b'))
+  })
+})
+
+describe('map utilities — additional', () => {
+  it('getCurrentStep returns correct values for various known nodes', () => {
+    const knownSteps: [string, number][] = [
+      ['PromptEngineering', 2],
+      ['RAG', 3],
+      ['FineTuning', 4],
+      ['Agent', 5],
+      ['AISystemDesign', 6],
+      ['VectorDB', 7],
+      ['LLMOps', 8],
+      ['EvalTesting', 9],
+      ['AISafety', 10],
+      ['Multimodal', 11],
+      ['Infrastructure', 12],
+      ['Coding', 13],
+      ['Behavioral', 14],
+    ]
+    knownSteps.forEach(([id, step]) => {
+      expect(getCurrentStep(id)).toBe(step)
+    })
+  })
+
+  it('getCurrentStep returns fractional steps correctly', () => {
+    expect(getCurrentStep('MCP')).toBe(5.5)
+    expect(getCurrentStep('StructuredOutputs')).toBe(2.5)
+    expect(getCurrentStep('ContextEngineering')).toBe(3.5)
+    expect(getCurrentStep('KnowledgeGraphs')).toBe(3.3)
+    expect(getCurrentStep('Workflows')).toBe(4.5)
+    expect(getCurrentStep('FunctionCalling')).toBe(5.6)
+  })
+
+  it('getLearningPath returns nodes in correct order', () => {
+    const path = getLearningPath()
+    // First 4 should be: LLM(1), PromptEngineering(2), StructuredOutputs(2.5), RAG(3)
+    expect(path[0].id).toBe('LLM')
+    expect(path[0].learningStep).toBe(1)
+    expect(path[1].id).toBe('PromptEngineering')
+    expect(path[1].learningStep).toBe(2)
+    expect(path[2].id).toBe('StructuredOutputs')
+    expect(path[2].learningStep).toBe(2.5)
+    expect(path[3].id).toBe('RAG')
+    expect(path[3].learningStep).toBe(3)
   })
 })
