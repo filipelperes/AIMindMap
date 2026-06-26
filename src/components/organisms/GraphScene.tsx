@@ -385,6 +385,25 @@ const GraphScene: React.FC<GraphSceneProps> = React.memo(
       )
     }, [])
 
+    // ─── RESET CAMERA ON DESELECT ───
+    // Tracks previous selectedNodeId to detect transitions from selected → null
+    // (panel close, background click, keyboard Escape, or re-clicking the same node).
+    // Handles all deselect paths uniformly — no need for duplicate resetCamera calls.
+    const prevSelectedRef = useRef<string | null>(selectedNodeId)
+    useEffect(() => {
+      if (prevSelectedRef.current !== null && selectedNodeId === null) {
+        // Node was just deselected → smoothly zoom out to show the full constellation
+        if (fgRef.current) {
+          fgRef.current.cameraPosition(
+            { x: 0, y: 0, z: 280 },
+            { x: 0, y: 0, z: 0 },
+            800,
+          )
+        }
+      }
+      prevSelectedRef.current = selectedNodeId
+    }, [selectedNodeId])
+
     const resetCamera = useCallback(() => {
       fgRef.current.cameraPosition(
         { x: 0, y: 0, z: 280 },
@@ -420,14 +439,14 @@ const GraphScene: React.FC<GraphSceneProps> = React.memo(
     const handleNodeClick = useCallback(
       (node: MindMapNode) => {
         if (node.id === selectedNodeId) {
-          resetCamera()
+          // Camera reset is handled by the deselect useEffect below
           onSelect(null)
         } else {
           zoomToNode(node)
           onSelect(node.id)
         }
       },
-      [selectedNodeId, onSelect, zoomToNode, resetCamera],
+      [selectedNodeId, onSelect, zoomToNode],
     )
 
     // ─── NODE HOVER ───
@@ -643,6 +662,17 @@ const GraphScene: React.FC<GraphSceneProps> = React.memo(
         data.pulseRing = undefined
         data.sparklePoints = undefined
 
+        // ── Reset group scale and hover flag when deselected ──
+        // handleNodeHover leaves selected nodes at SELECTED_RADIUS/BASE_RADIUS
+        // scale (1.3×) after unhover. Without explicit reset here, the node
+        // appears "still selected" even after decorations are removed.
+        // (prevSelected is captured before data.wasSelected is overwritten)
+        if (!isSelected && prevSelected) {
+          group.scale.set(1, 1, 1)
+          data.isHovered = false
+          group.userData.isHovered = false
+        }
+
         // Glow wireframe + ring (selected)
         if (isSelected) {
           const glowGeo = new SphereGeometry(radius * 1.1, 32, 32)
@@ -857,17 +887,19 @@ const GraphScene: React.FC<GraphSceneProps> = React.memo(
       [selectedNodeId],
     )
 
-    // ─── PHYSICS: outer space (maximum inertia → "loose") ───
-    // Molecules float like stars: they keep moving after
-    // drag (inertia), no gravity, with organic drift.
+    // ─── PHYSICS: gentle dispersion then settle ───
+    // Molecules look like stars floating in space, but the aesthetic
+    // is driven by the animation loop (wobble, rotation, sprite bob)
+    // — NOT by perpetual force simulation. Letting the d3 sim settle
+    // eliminates layout-thrash jank (~5 min → ~5 sec to settle).
     const physicsConfig = useMemo(() => ({
       d3Gravity: 0,              // Zero gravity → outer space
-      d3AlphaDecay: 0.0005,      // Ultra-slow decay → even more momentum
-      d3VelocityDecay: 0.0005,   // Even less friction → prolonged inertia
-      d3AlphaMin: 0.0001,        // Extremely low minimum → perpetual motion
-      warmupTicks: 500,          // More ticks for initial dispersion
-      cooldownTicks: 0,          // No cooldown → never stops
-      d3ReheatSimulation: false, // Keeps alpha low to prevent reheating
+      d3AlphaDecay: 0.02,        // 40× faster → sim settles in ~300 ticks
+      d3VelocityDecay: 0.3,      // Near-default friction → no endless drift
+      d3AlphaMin: 0.001,         // Moderate minimum alpha
+      warmupTicks: 300,          // Enough ticks to spread out
+      cooldownTicks: 100,        // Settle after cooling down
+      d3ReheatSimulation: false, // Don't reheat — one-shot layout
     }), [])
 
     // ─── KEYBOARD ───
