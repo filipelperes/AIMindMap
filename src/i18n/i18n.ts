@@ -38,7 +38,7 @@ async function initI18n(): Promise<typeof i18n> {
   const loader = localeLoaders[detectedLang] ?? localeLoaders['en-US']
   const resources = await loader()
 
-  i18n
+  await i18n
     .use(initReactI18next)
     .use(LanguageDetector)
     .init({
