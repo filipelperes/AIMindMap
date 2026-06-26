@@ -3,17 +3,20 @@ export interface MindMapNode {
   group: number
   description: string
   val?: number
-  content: NodeContent
+  /** Content is loaded asynchronously via contentRegistry.
+   *  It is guaranteed to be populated before the first React render
+   *  via contentReady promise in main.tsx. */
+  content?: NodeContent
   x?: number
   y?: number
   z?: number
-  /** Velocidade de rotação própria da molécula (rad/s) */
+  /** Molecule's own rotation speed (rad/s) */
   spinSpeed?: number
-  /** Ordem no caminho de aprendizado (step-by-step) */
+  /** Order in the learning path (step-by-step) */
   learningStep?: number
-  /** Categoria cheatsheet */
+  /** Cheatsheet category */
   cheatsheet?: CheatsheetCategory
-  /** Estatísticas ou metadata adicional do nó */
+  /** Stats or additional node metadata */
   stat?: number
 }
 
@@ -27,9 +30,9 @@ export type CheatsheetCategory =
 export interface NodeContent {
   summary: string
   sections: ContentSection[]
-  /** Exemplo do cotidiano / analogia do mundo real */
+  /** Everyday example / real-world analogy */
   everydayExample?: string
-  /** Dica rápida para o cheatsheet */
+  /** Quick tip for the cheatsheet */
   quickTip?: string
 }
 
@@ -49,11 +52,11 @@ export type SectionType =
 export interface ContentSection {
   title: string
   type: SectionType
-  /** Corpo do texto (opcional para seções que usam items ou qa) */
+  /** Body text (optional for sections that use items or qa) */
   body?: string
   code?: { language: string; source: string }
   items?: string[]
-  /** Pergunta e resposta para seções do tipo qa-list */
+  /** Question and answer for qa-list sections */
   qa?: { question: string; answer: string }[]
 }
 

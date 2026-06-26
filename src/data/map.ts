@@ -1,36 +1,34 @@
-import { nodeContent } from './content'
 import type { GraphData } from '../types/mindmap'
 
 /**
- * Dados do grafo com organização step-by-step (learning path).
+ * Graph data with step-by-step organization (learning path).
  * 
- * Ordem de aprendizado recomendada (learningStep):
- * 1. LLM — Fundamentos
- * 2. PromptEngineering — Como se comunicar com LLMs
- * 3. RAG — Conectando LLMs a conhecimento externo
- * 4. FineTuning — Especializando modelos
- * 5. Agent — Agentes autônomos
- * 5.5 MCP — Protocolo de Contexto para Ferramentas
- * 6. AISystemDesign — Arquitetura de sistemas
- * 7. VectorDB — Memória de longo prazo
- * 8. LLMOps — Produção e operação
- * 9. EvalTesting — Avaliação e qualidade
- * 10. AISafety — Segurança e ética
- * 11. Multimodal — Além do texto
- * 12. Infrastructure — Infraestrutura e escala
- * 13. Coding — Implementação prática
- * 14. Behavioral — Cenários e comportamental
+ * Recommended learning order (learningStep):
+ * 1. LLM — Foundations
+ * 2. PromptEngineering — How to communicate with LLMs
+ * 3. RAG — Connecting LLMs to external knowledge
+ * 4. FineTuning — Specializing models
+ * 5. Agent — Autonomous agents
+ * 5.5 MCP — Context Protocol for Tools
+ * 6. AISystemDesign — Systems architecture
+ * 7. VectorDB — Long-term memory
+ * 8. LLMOps — Production and operations
+ * 9. EvalTesting — Evaluation and quality
+ * 10. AISafety — Safety and ethics
+ * 11. Multimodal — Beyond text
+ * 12. Infrastructure — Infrastructure and scale
+ * 13. Coding — Practical implementation
+ * 14. Behavioral — Scenarios and behavioral
  * 
- * Cada nó tem spinSpeed próprio (rad/s) para efeito de rotação individual.
+ * Each node has its own spinSpeed (rad/s) for individual rotation effect.
  */
 export const graphData: GraphData = {
   nodes: [
-    // ═══ LEVEL 1: FUNDAMENTOS ═══
+    // ═══ LEVEL 1: FOUNDATIONS ═══
     {
       id: 'LLM',
       group: 1,
-      description: 'Fundação: como LLMs funcionam por baixo dos panos.',
-      content: nodeContent.LLM,
+      description: 'Foundation: how LLMs work under the hood.',
       learningStep: 1,
       spinSpeed: 0.12,
       val: 12
@@ -38,19 +36,17 @@ export const graphData: GraphData = {
     {
       id: 'PromptEngineering',
       group: 2,
-      description: 'A arte de extrair o melhor dos LLMs com prompts precisos.',
-      content: nodeContent.PromptEngineering,
+      description: 'The art of extracting the best from LLMs with precise prompts.',
       learningStep: 2,
       spinSpeed: 0.15,
       val: 10
     },
 
-    // ═══ LEVEL 2: TÉCNICAS CENTRAIS ═══
+    // ═══ LEVEL 2: CORE TECHNIQUES ═══
     {
       id: 'RAG',
       group: 3,
-      description: 'Conectando LLMs a bases de conhecimento externas.',
-      content: nodeContent.RAG,
+      description: 'Connecting LLMs to external knowledge bases.',
       learningStep: 3,
       spinSpeed: 0.08,
       val: 15
@@ -58,8 +54,7 @@ export const graphData: GraphData = {
     {
       id: 'FineTuning',
       group: 4,
-      description: 'Especializando modelos para domínios e tarefas específicas.',
-      content: nodeContent.FineTuning,
+      description: 'Specializing models for specific domains and tasks.',
       learningStep: 4,
       spinSpeed: 0.10,
       val: 11
@@ -67,30 +62,27 @@ export const graphData: GraphData = {
     {
       id: 'Agent',
       group: 5,
-      description: 'Sistemas autônomos que planejam, agem e aprendem.',
-      content: nodeContent.Agent,
+      description: 'Autonomous systems that plan, act, and learn.',
       learningStep: 5,
       spinSpeed: 0.14,
       val: 13
     },
 
-    // ═══ LEVEL 2.5: PROTOCOLOS & PADRÕES ═══
+    // ═══ LEVEL 2.5: PROTOCOLS & STANDARDS ═══
     {
       id: 'MCP',
       group: 15,
-      description: 'Protocolo aberto para conectar LLMs a ferramentas e fontes de dados externas.',
-      content: nodeContent.MCP,
+      description: 'Open protocol for connecting LLMs to external tools and data sources.',
       learningStep: 5.5,
       spinSpeed: 0.17,
       val: 10
     },
 
-    // ═══ LEVEL 3: ARQUITETURA & DADOS ═══
+    // ═══ LEVEL 3: ARCHITECTURE & DATA ═══
     {
       id: 'AISystemDesign',
       group: 6,
-      description: 'Arquitetando sistemas completos de IA em produção.',
-      content: nodeContent.AISystemDesign,
+      description: 'Architecting complete AI systems in production.',
       learningStep: 6,
       spinSpeed: 0.09,
       val: 11
@@ -98,8 +90,7 @@ export const graphData: GraphData = {
     {
       id: 'VectorDB',
       group: 8,
-      description: 'Bancos vetoriais e embeddings para busca semântica.',
-      content: nodeContent.VectorDB,
+      description: 'Vector databases and embeddings for semantic search.',
       learningStep: 7,
       spinSpeed: 0.11,
       val: 9
@@ -107,19 +98,17 @@ export const graphData: GraphData = {
     {
       id: 'LLMOps',
       group: 7,
-      description: 'Operacionalizando LLMs com monitoramento e escalabilidade.',
-      content: nodeContent.LLMOps,
+      description: 'Operationalizing LLMs with monitoring and scalability.',
       learningStep: 8,
       spinSpeed: 0.13,
       val: 11
     },
 
-    // ═══ LEVEL 4: QUALIDADE & SEGURANÇA ═══
+    // ═══ LEVEL 4: QUALITY & SAFETY ═══
     {
       id: 'EvalTesting',
       group: 9,
-      description: 'Avaliação sistemática de qualidade, precisão e segurança.',
-      content: nodeContent.EvalTesting,
+      description: 'Systematic evaluation of quality, accuracy, and safety.',
       learningStep: 9,
       spinSpeed: 0.16,
       val: 9
@@ -127,19 +116,17 @@ export const graphData: GraphData = {
     {
       id: 'AISafety',
       group: 10,
-      description: 'IA responsável: ética, privacidade, viés e regulação.',
-      content: nodeContent.AISafety,
+      description: 'Responsible AI: ethics, privacy, bias, and regulation.',
       learningStep: 10,
       spinSpeed: 0.07,
       val: 10
     },
 
-    // ═══ LEVEL 5: AVANÇADO ═══
+    // ═══ LEVEL 5: ADVANCED ═══
     {
       id: 'Multimodal',
       group: 11,
-      description: 'Modelos que processam texto, imagem, áudio e vídeo.',
-      content: nodeContent.Multimodal,
+      description: 'Models that process text, image, audio, and video.',
       learningStep: 11,
       spinSpeed: 0.18,
       val: 8
@@ -147,8 +134,7 @@ export const graphData: GraphData = {
     {
       id: 'Infrastructure',
       group: 12,
-      description: 'GPUs, escalabilidade, otimização e servindo modelos.',
-      content: nodeContent.Infrastructure,
+      description: 'GPUs, scalability, optimization, and serving models.',
       learningStep: 12,
       spinSpeed: 0.06,
       val: 9
@@ -156,8 +142,7 @@ export const graphData: GraphData = {
     {
       id: 'Coding',
       group: 13,
-      description: 'Implementações práticas: RAG, agentes, busca, avaliação.',
-      content: nodeContent.Coding,
+      description: 'Practical implementations: RAG, agents, search, evaluation.',
       learningStep: 13,
       spinSpeed: 0.20,
       val: 8
@@ -165,19 +150,17 @@ export const graphData: GraphData = {
     {
       id: 'Behavioral',
       group: 14,
-      description: 'Cenários, trade-offs e decisões do mundo real.',
-      content: nodeContent.Behavioral,
+      description: 'Scenarios, trade-offs, and real-world decisions.',
       learningStep: 14,
       spinSpeed: 0.05,
       val: 7
     },
 
-    // ═══ NOVOS NÓS — EXPANSÃO ═══
+    // ═══ NEW NODES — EXPANSION ═══
     {
       id: 'StructuredOutputs',
       group: 20,
-      description: 'Garantia de formato de saída com esquemas Pydantic, JSON mode e bibliotecas como instructor e Outlines.',
-      content: nodeContent.StructuredOutputs,
+      description: 'Output format guarantee with Pydantic schemas, JSON mode, and libraries like instructor and Outlines.',
       learningStep: 2.5,
       spinSpeed: 0.09,
       val: 8
@@ -185,8 +168,7 @@ export const graphData: GraphData = {
     {
       id: 'ContextEngineering',
       group: 18,
-      description: 'Otimização do contexto enviado ao LLM: compressão, sliding window, token budget e destilação usando LLMLingua.',
-      content: nodeContent.ContextEngineering,
+      description: 'Optimization of context sent to the LLM: compression, sliding window, token budget and distillation using LLMLingua.',
       learningStep: 3.5,
       spinSpeed: 0.10,
       val: 11
@@ -194,8 +176,7 @@ export const graphData: GraphData = {
     {
       id: 'KnowledgeGraphs',
       group: 26,
-      description: 'Construção e consulta de grafos de conhecimento com entidades e relações para busca multi-hop estruturada.',
-      content: nodeContent.KnowledgeGraphs,
+      description: 'Construction and querying of knowledge graphs with entities and relations for structured multi-hop search.',
       learningStep: 3.3,
       spinSpeed: 0.09,
       val: 8
@@ -203,8 +184,7 @@ export const graphData: GraphData = {
     {
       id: 'Workflows',
       group: 16,
-      description: 'Orquestração de pipelines de IA com DAGs, loops, human-in-the-loop e paralelismo usando LangGraph e Prefect.',
-      content: nodeContent.Workflows,
+      description: 'Orchestration of AI pipelines with DAGs, loops, human-in-the-loop, and parallelism using LangGraph and Prefect.',
       learningStep: 4.5,
       spinSpeed: 0.12,
       val: 11
@@ -212,8 +192,7 @@ export const graphData: GraphData = {
     {
       id: 'MultiAgentSystems',
       group: 17,
-      description: 'Coordenação entre múltiplos agentes especializados com orquestração, handoff e debate usando CrewAI e AutoGen.',
-      content: nodeContent.MultiAgentSystems,
+      description: 'Coordination between multiple specialized agents with orchestration, handoff, and debate using CrewAI and AutoGen.',
       learningStep: 5.2,
       spinSpeed: 0.15,
       val: 10
@@ -221,8 +200,7 @@ export const graphData: GraphData = {
     {
       id: 'FunctionCalling',
       group: 21,
-      description: 'Capacidade nativa de LLMs de declarar e invocar ferramentas externas via APIs como OpenAI tool use e Anthropic tool use.',
-      content: nodeContent.FunctionCalling,
+      description: 'Native capability of LLMs to declare and invoke external tools via APIs like OpenAI tool use and Anthropic tool use.',
       learningStep: 5.6,
       spinSpeed: 0.11,
       val: 8
@@ -230,8 +208,7 @@ export const graphData: GraphData = {
     {
       id: 'HybridSearch',
       group: 22,
-      description: 'Combinação de busca semântica vetorial com busca lexical BM25 usando RRF para resultados mais precisos.',
-      content: nodeContent.HybridSearch,
+      description: 'Combination of vector semantic search with BM25 lexical search using RRF for more accurate results.',
       learningStep: 7.5,
       spinSpeed: 0.08,
       val: 8
@@ -239,46 +216,45 @@ export const graphData: GraphData = {
     {
       id: 'ObservabilityAI',
       group: 19,
-      description: 'Monitoramento, tracing e observabilidade de sistemas de IA com LangSmith, Langfuse e Phoenix para debug e otimização.',
-      content: nodeContent.ObservabilityAI,
+      description: 'Monitoring, tracing, and observability of AI systems with LangSmith, Langfuse, and Phoenix for debugging and optimization.',
       learningStep: 8.5,
       spinSpeed: 0.07,
       val: 10
     }
   ],
 
-  // Links formam um grafo de conhecimento progressivo
+  // Links form a progressive knowledge graph
   links: [
-    // Fundamentos → Técnicas
+    // Foundations → Techniques
     { source: 'LLM', target: 'PromptEngineering' },
     { source: 'PromptEngineering', target: 'RAG' },
     { source: 'LLM', target: 'RAG' },
 
-    // Técnicas Centrais
+    // Core Techniques
     { source: 'RAG', target: 'FineTuning' },
     { source: 'RAG', target: 'Agent' },
     { source: 'LLM', target: 'FineTuning' },
     { source: 'FineTuning', target: 'Agent' },
 
-    // MCP — Padronização de Ferramentas
+    // MCP — Tool Standardization
     { source: 'Agent', target: 'MCP' },
     { source: 'MCP', target: 'AISystemDesign' },
     { source: 'MCP', target: 'Coding' },
 
-    // Arquitetura & Dados
+    // Architecture & Data
     { source: 'RAG', target: 'VectorDB' },
     { source: 'Agent', target: 'AISystemDesign' },
     { source: 'RAG', target: 'AISystemDesign' },
     { source: 'LLMOps', target: 'AISystemDesign' },
     { source: 'VectorDB', target: 'AISystemDesign' },
 
-    // Qualidade & Segurança
+    // Quality & Safety
     { source: 'AISystemDesign', target: 'LLMOps' },
     { source: 'LLMOps', target: 'EvalTesting' },
     { source: 'EvalTesting', target: 'AISafety' },
     { source: 'Agent', target: 'AISafety' },
 
-    // Avançado
+    // Advanced
     { source: 'LLM', target: 'Multimodal' },
     { source: 'LLMOps', target: 'Infrastructure' },
     { source: 'AISystemDesign', target: 'Infrastructure' },
@@ -287,60 +263,60 @@ export const graphData: GraphData = {
     { source: 'Coding', target: 'Behavioral' },
     { source: 'AISafety', target: 'Behavioral' },
 
-    // Conexões cross
+    // Cross connections
     { source: 'LLM', target: 'EvalTesting' },
     { source: 'FineTuning', target: 'EvalTesting' },
     { source: 'Multimodal', target: 'VectorDB' },
     { source: 'Multimodal', target: 'Agent' },
 
-    // ═══ NOVOS LINKS — StructuredOutputs ═══
+    // ═══ NEW LINKS — StructuredOutputs ═══
     { source: 'StructuredOutputs', target: 'LLM' },
     { source: 'StructuredOutputs', target: 'PromptEngineering' },
     { source: 'StructuredOutputs', target: 'RAG' },
     { source: 'StructuredOutputs', target: 'AISystemDesign' },
 
-    // ═══ NOVOS LINKS — ContextEngineering ═══
+    // ═══ NEW LINKS — ContextEngineering ═══
     { source: 'ContextEngineering', target: 'LLM' },
     { source: 'ContextEngineering', target: 'RAG' },
     { source: 'ContextEngineering', target: 'PromptEngineering' },
     { source: 'ContextEngineering', target: 'LLMOps' },
     { source: 'ContextEngineering', target: 'AISystemDesign' },
 
-    // ═══ NOVOS LINKS — KnowledgeGraphs ═══
+    // ═══ NEW LINKS — KnowledgeGraphs ═══
     { source: 'KnowledgeGraphs', target: 'RAG' },
     { source: 'KnowledgeGraphs', target: 'VectorDB' },
     { source: 'KnowledgeGraphs', target: 'AISystemDesign' },
     { source: 'KnowledgeGraphs', target: 'LLM' },
     { source: 'KnowledgeGraphs', target: 'Workflows' },
 
-    // ═══ NOVOS LINKS — Workflows ═══
+    // ═══ NEW LINKS — Workflows ═══
     { source: 'Workflows', target: 'LLM' },
     { source: 'Workflows', target: 'RAG' },
     { source: 'Workflows', target: 'Agent' },
     { source: 'Workflows', target: 'MCP' },
     { source: 'Workflows', target: 'AISystemDesign' },
 
-    // ═══ NOVOS LINKS — MultiAgentSystems ═══
+    // ═══ NEW LINKS — MultiAgentSystems ═══
     { source: 'MultiAgentSystems', target: 'Agent' },
     { source: 'MultiAgentSystems', target: 'MCP' },
     { source: 'MultiAgentSystems', target: 'AISystemDesign' },
     { source: 'MultiAgentSystems', target: 'Workflows' },
     { source: 'MultiAgentSystems', target: 'LLMOps' },
 
-    // ═══ NOVOS LINKS — FunctionCalling ═══
+    // ═══ NEW LINKS — FunctionCalling ═══
     { source: 'FunctionCalling', target: 'LLM' },
     { source: 'FunctionCalling', target: 'Agent' },
     { source: 'FunctionCalling', target: 'MCP' },
     { source: 'FunctionCalling', target: 'StructuredOutputs' },
     { source: 'FunctionCalling', target: 'AISystemDesign' },
 
-    // ═══ NOVOS LINKS — HybridSearch ═══
+    // ═══ NEW LINKS — HybridSearch ═══
     { source: 'HybridSearch', target: 'VectorDB' },
     { source: 'HybridSearch', target: 'RAG' },
     { source: 'HybridSearch', target: 'AISystemDesign' },
     { source: 'HybridSearch', target: 'LLMOps' },
 
-    // ═══ NOVOS LINKS — ObservabilityAI ═══
+    // ═══ NEW LINKS — ObservabilityAI ═══
     { source: 'ObservabilityAI', target: 'LLMOps' },
     { source: 'ObservabilityAI', target: 'EvalTesting' },
     { source: 'ObservabilityAI', target: 'AISystemDesign' },
@@ -350,7 +326,7 @@ export const graphData: GraphData = {
 }
 
 /**
- * Retorna a lista de nós ordenada por learningStep.
+ * Returns the list of nodes sorted by learningStep.
  */
 export function getLearningPath() {
   return [...graphData.nodes]
@@ -359,7 +335,7 @@ export function getLearningPath() {
 }
 
 /**
- * Retorna o step atual baseado no nó selecionado.
+ * Returns the current step based on the selected node.
  */
 export function getCurrentStep(nodeId: string | null): number {
   if (!nodeId) return 0
