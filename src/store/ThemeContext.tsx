@@ -1,37 +1,35 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, useMemo } from 'react'
-import type { ThemeMode, ThemeColors } from '../constants/theme'
-import { darkTheme, lightTheme, getGroupPaletteForTheme } from '../constants/theme'
+import type { ThemeMode } from '../constants/theme'
+import { getGroupPaletteForTheme } from '../constants/theme'
 import type { GroupPalette } from '../types/mindmap'
 
-interface ThemeContextType {
+export interface ThemeContextType {
   mode: ThemeMode
-  colors: ThemeColors
   toggle: () => void
   setMode: (mode: ThemeMode) => void
   getGroupPalette: (group: number) => GroupPalette
   isDark: boolean
 }
 
-const ThemeContext = createContext<ThemeContextType | null>(null)
+/* eslint-disable-next-line react-refresh/only-export-components */
+export const ThemeContext = createContext<ThemeContextType | null>(null)
 
 const STORAGE_KEY = 'aimindmap-theme'
 
 /**
- * Provider do tema que gerencia dark/light mode.
- * Persiste preferência no localStorage.
+ * Theme provider that manages dark/light mode.
+ * Persists preference in localStorage.
  */
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [mode, setModeState] = useState<ThemeMode>(() => {
     if (typeof window !== 'undefined') {
       const stored = localStorage.getItem(STORAGE_KEY) as ThemeMode | null
       if (stored === 'dark' || stored === 'light') return stored
-      // Se o sistema prefere light mode, use light
+      // If the system prefers light mode, use light
       if (window.matchMedia?.('(prefers-color-scheme: light)').matches) return 'light'
     }
     return 'dark'
   })
-
-  const colors = useMemo(() => mode === 'dark' ? darkTheme : lightTheme, [mode])
 
   const toggle = useCallback(() => {
     setModeState(prev => {
@@ -50,12 +48,17 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     return getGroupPaletteForTheme(group, mode)
   }, [mode])
 
-  // Aplicar atributo data-theme no <html> para CSS variables
+  // Apply data-theme attribute on <html> for CSS variables
+  // and sync meta[name="theme-color"] for mobile browser chrome.
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', mode)
+    const meta = document.querySelector('meta[name="theme-color"]')
+    if (meta) {
+      meta.setAttribute('content', mode === 'dark' ? '#080B1A' : '#F0F4FF')
+    }
   }, [mode])
 
-  // Sincronizar com prefers-color-scheme
+  // Synchronize with prefers-color-scheme
   useEffect(() => {
     const mq = window.matchMedia('(prefers-color-scheme: light)')
     const handler = (e: MediaQueryListEvent) => {
@@ -68,20 +71,25 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     return () => mq.removeEventListener('change', handler)
   }, [])
 
+  const ctx = useMemo(() => ({
+    mode, toggle, setMode, getGroupPalette, isDark: mode === 'dark',
+  }), [mode, toggle, setMode, getGroupPalette])
+
   return (
-    <ThemeContext.Provider value={{ mode, colors, toggle, setMode, getGroupPalette, isDark: mode === 'dark' }}>
+    <ThemeContext.Provider value={ctx}>
       {children}
     </ThemeContext.Provider>
   )
 }
 
 /**
- * Hook para acessar o tema atual.
+ * Hook to access the current theme.
  */
+/* eslint-disable-next-line react-refresh/only-export-components */
 export function useTheme(): ThemeContextType {
   const ctx = useContext(ThemeContext)
   if (!ctx) throw new Error('useTheme must be used within ThemeProvider')
   return ctx
 }
 
-export default ThemeContext
+
