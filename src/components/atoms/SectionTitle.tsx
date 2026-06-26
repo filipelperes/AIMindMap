@@ -2,17 +2,19 @@ import React from 'react'
 
 interface SectionTitleProps {
   children: string
-  /** Cor da barra decorativa (linha abaixo do título) */
+  /** Color of the decorative bar (line below the title) */
   accentColor?: string
-  /** Mostrar barra decorativa? (default: true) */
+  /** Show decorative bar? (default: true) */
   showAccent?: boolean
 }
 
-/** Título de seção (h3) com barra decorativa opcional. */
+/** Section title (h3) with optional decorative bar. */
 const SectionTitle: React.FC<SectionTitleProps> = React.memo(
   ({ children, accentColor, showAccent = true }) => {
     return (
-      <h3 className="mb-3 text-lg font-semibold text-white/90">
+      <h3
+        className="mb-3 text-lg font-semibold dark:text-white/90 text-black/85"
+      >
         {children}
         {showAccent && accentColor && (
           <span

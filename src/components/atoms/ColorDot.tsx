@@ -1,17 +1,17 @@
 import React from 'react'
 
 interface ColorDotProps {
-  /** Cor base (ex: palette.base) */
+  /** Base color (e.g. palette.base) */
   color: string
-  /** Cor do glow (ex: palette.emissive) */
+  /** Glow color (e.g. palette.emissive) */
   glowColor?: string
-  /** Tamanho em px (default: 12) */
+  /** Size in px (default: 12) */
   size?: number
-  /** Label acessível */
+  /** Accessible label */
   label?: string
 }
 
-/** Círculo colorido com glow emissivo. Usado como indicador visual de grupo. */
+/** Colorful circle with emissive glow. Used as a visual group indicator. */
 const ColorDot: React.FC<ColorDotProps> = React.memo(
   ({ color, glowColor, size = 12, label }) => {
     return (

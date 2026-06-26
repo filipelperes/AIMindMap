@@ -2,17 +2,17 @@ import React, { type ReactNode } from 'react'
 
 interface GlowTextProps {
   children: ReactNode
-  /** Cor do glow (CSS color) */
+  /** Glow color (CSS color) */
   color?: string
-  /** Intensidade do blur (px, default: 8) */
+  /** Blur intensity (px, default: 8) */
   blur?: number
   /** Tag HTML (default: 'span') */
   as?: 'span' | 'h1' | 'h2' | 'h3' | 'p' | 'div'
-  /** Classes Tailwind adicionais */
+  /** Additional Tailwind classes */
   className?: string
 }
 
-/** Texto com efeito de glow neon via text-shadow. */
+/** Text with neon glow effect via text-shadow. */
 const GlowText: React.FC<GlowTextProps> = React.memo(
   ({ children, color = '#00FFF0', blur = 8, as: Tag = 'span', className = '' }) => {
     return (

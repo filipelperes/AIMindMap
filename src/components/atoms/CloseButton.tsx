@@ -1,23 +1,26 @@
 import React from 'react'
+import { useTranslation } from 'react-i18next'
 
 interface CloseButtonProps {
   onClick: () => void
-  /** Label acessível (default: "Fechar") */
+  /** Accessible label (default: translation of 'closeButton.ariaLabel') */
   ariaLabel?: string
-  /** Tamanho em px (default: 32) */
+  /** Size in px (default: 32) */
   size?: number
 }
 
-/** Botão X circular para fechar painéis. Extraído do SVG inline original. */
+/** Circular X button to close panels. Extracted from the original inline SVG. */
 const CloseButton: React.FC<CloseButtonProps> = React.memo(
-  ({ onClick, ariaLabel = 'Fechar', size = 32 }) => {
+  ({ onClick, ariaLabel, size = 32 }) => {
+    const { t } = useTranslation()
+    const label = ariaLabel ?? t('closeButton.ariaLabel')
     const iconSize = Math.round(size * 0.44)
 
     return (
       <button
         onClick={onClick}
-        aria-label={ariaLabel}
-        className="flex shrink-0 items-center justify-center rounded-full bg-white/10 text-white/60 transition-colors hover:bg-white/20 hover:text-white"
+        aria-label={label}
+        className="flex shrink-0 items-center justify-center rounded-full transition-colors bg-black/6 dark:bg-white/10 text-black/60 dark:text-white/60 hover:bg-black/15 hover:dark:bg-white/20 hover:text-black hover:dark:text-white"
         style={{ width: size, height: size, minWidth: size }}
       >
         <svg

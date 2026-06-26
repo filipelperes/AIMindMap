@@ -17,12 +17,12 @@ interface MainLayoutProps {
 }
 
 /**
- * Template: layout principal com fundo animado de partículas 3D.
+ * Template: main layout with animated 3D particle background.
  *
- * Camadas (z-index):
- *  0 — ParticleBackground (fundo animado principal)
- * 10 — GraphScene (moléculas 3D com fundo transparente)
- * 40 — HeroOverlay (título + subtítulo)
+ * Layers (z-index):
+ *  0 — ParticleBackground (main animated background)
+ * 10 — GraphScene (3D molecules with transparent background)
+ * 40 — HeroOverlay (title + subtitle)
  * 50 — DetailPanel
  */
 const MainLayout: React.FC<MainLayoutProps> = React.memo(
@@ -42,7 +42,7 @@ const MainLayout: React.FC<MainLayoutProps> = React.memo(
           transition: "opacity 1.2s ease-in-out",
         }}
       >
-        {/* Camada 0: Fundo animado de partículas — fundo PRINCIPAL */}
+        {/* Layer 0: Animated particle background — MAIN background */}
         <div className="absolute inset-0 z-0">
           <ParticleBackground
             opacity={isMobile && isMobileSidebarOpen ? 0.3 : 1}
@@ -50,7 +50,7 @@ const MainLayout: React.FC<MainLayoutProps> = React.memo(
           />
         </div>
 
-        {/* Camada 10: Grafo 3D com fundo transparente */}
+        {/* Layer 10: 3D graph with transparent background */}
         <motion.div
           data-tour="graph"
           animate={{
@@ -68,10 +68,10 @@ const MainLayout: React.FC<MainLayoutProps> = React.memo(
           />
         </motion.div>
 
-        {/* Camada 40: Título (apenas quando sem seleção) */}
+        {/* Layer 40: Title (only when nothing is selected) */}
         {!selectedNode && <HeroOverlay isMobile={isMobile} />}
 
-        {/* Camada 50: Painel de detalhes (apenas quando com seleção) */}
+        {/* Layer 50: Detail panel (only when something is selected) */}
         <DetailPanel
           node={selectedNode}
           onClose={onClose}

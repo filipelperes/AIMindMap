@@ -2,17 +2,17 @@ import React from 'react'
 import ColorDot from './ColorDot'
 
 interface BadgeProps {
-  /** Texto do badge (ex: "Retrieval") */
+  /** Badge text (e.g. "Retrieval") */
   label: string
-  /** Cor base do grupo */
+  /** Group base color */
   baseColor: string
-  /** Cor do glow */
+  /** Glow color */
   glowColor?: string
-  /** Cor do texto (accent) */
+  /** Text color (accent) */
   textColor?: string
 }
 
-/** Badge tipo pill com bolinha colorida + label do grupo. */
+/** Pill-type badge with colored dot + group label. */
 const Badge: React.FC<BadgeProps> = React.memo(
   ({ label, baseColor, glowColor, textColor }) => {
     return (

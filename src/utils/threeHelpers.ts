@@ -1,82 +1,60 @@
-import * as THREE from 'three'
-import type { GroupPalette } from '../types/mindmap'
+import { SphereGeometry, Mesh, TorusGeometry, MeshBasicMaterial, CanvasTexture } from 'three'
 
 /* ============================================================
-   threeHelpers — Factory functions com cache para geometrias,
-   materiais e texturas Three.js. Evita recriação em cada render.
+   threeHelpers — Factory functions with cache for Three.js geometries,
+   label textures, and pulsating ring meshes.
+   Avoids recreation on each render or theme toggle.
    ============================================================ */
 
-// ---- Cache de Geometrias ----
+// ---- Geometry Cache ----
 
-const sphereGeoCache = new Map<number, THREE.SphereGeometry>()
+const sphereGeoCache = new Map<number, SphereGeometry>()
 
-/** Retorna uma SphereGeometry compartilhada para o raio informado. */
-export function getSphereGeometry(radius: number): THREE.SphereGeometry {
+/** Returns a shared SphereGeometry for the given radius. */
+export function getSphereGeometry(radius: number): SphereGeometry {
   if (!sphereGeoCache.has(radius)) {
-    sphereGeoCache.set(radius, new THREE.SphereGeometry(radius, 32, 32))
+    sphereGeoCache.set(radius, new SphereGeometry(radius, 32, 32))
   }
   return sphereGeoCache.get(radius)!
 }
 
-const boxGeoCache = new Map<string, THREE.BoxGeometry>()
+// ---- Pulsing Ring Cache ----
 
-/** Retorna uma BoxGeometry compartilhada. */
-export function getBoxGeometry(w: number, h: number, d: number): THREE.BoxGeometry {
-  const key = `${w}x${h}x${d}`
-  if (!boxGeoCache.has(key)) {
-    boxGeoCache.set(key, new THREE.BoxGeometry(w, h, d))
-  }
-  return boxGeoCache.get(key)!
+/** Shared pool of pulsing ring meshes keyed by radius + color. */
+const pulsingRingCache = new Map<string, Mesh>()
+
+function ringCacheKey(radius: number, color: string): string {
+  return `${radius}|${color}`
 }
 
-// ---- Cache de Materiais ----
+/**
+ * Returns a shared outer pulsing ring mesh for the given radius and palette.
+ * Geometry and material are cached — only the instance mesh is returned per call.
+ * The caller should add it to the scene (or decorGroup) and animate opacity/scale.
+ */
+export function getPulsingRing(radius: number, color: string): Mesh {
+  const key = ringCacheKey(radius, color)
+  const cached = pulsingRingCache.get(key)
+  if (cached) return cached.clone()
 
-interface MaterialKey {
-  base: string
-  emissive: string
-  emissiveIntensity: number
-  metalness: number
-  roughness: number
+  const ringGeo = new TorusGeometry(radius * 1.8, 0.08, 8, 48)
+  const ringMat = new MeshBasicMaterial({
+    color,
+    transparent: true,
+    opacity: 0.4,
+  })
+
+  const ring = new Mesh(ringGeo, ringMat)
+  ring.rotation.x = Math.PI / 3
+
+  // Store the original in cache
+  pulsingRingCache.set(key, ring.clone())
+  return ring
 }
 
-const materialKeyStr = (k: MaterialKey): string =>
-  `${k.base}|${k.emissive}|${k.emissiveIntensity}|${k.metalness}|${k.roughness}`
+// ---- Texture Cache (Sprite Labels) ----
 
-const materialCache = new Map<string, THREE.MeshStandardMaterial>()
-
-/** Retorna um MeshStandardMaterial compartilhado com base na palette + estado. */
-export function getNodeMaterial(
-  palette: GroupPalette,
-  isSelected: boolean,
-  isHovered = false,
-): THREE.MeshStandardMaterial {
-  const intensity = isHovered ? 4 : isSelected ? 3 : 2
-  const key: MaterialKey = {
-    base: palette.base,
-    emissive: palette.emissive,
-    emissiveIntensity: intensity,
-    metalness: 0.1,
-    roughness: 0.3,
-  }
-  const sk = materialKeyStr(key)
-  if (!materialCache.has(sk)) {
-    materialCache.set(
-      sk,
-      new THREE.MeshStandardMaterial({
-        color: new THREE.Color(palette.base),
-        emissive: new THREE.Color(palette.emissive),
-        emissiveIntensity: intensity,
-        metalness: 0.1,
-        roughness: 0.3,
-      }),
-    )
-  }
-  return materialCache.get(sk)!
-}
-
-// ---- Cache de Texturas (Sprite Labels) ----
-
-const spriteTextureCache = new Map<string, THREE.CanvasTexture>()
+const spriteTextureCache = new Map<string, CanvasTexture>()
 
 interface LabelOptions {
   text: string
@@ -87,7 +65,7 @@ interface LabelOptions {
   textColor?: string
 }
 
-/** Cria (ou retorna do cache) uma CanvasTexture com o texto formatado. */
+/** Creates (or returns from cache) a CanvasTexture with formatted text. */
 export function getLabelTexture({
   text,
   color,
@@ -95,7 +73,7 @@ export function getLabelTexture({
   glowColor = 'rgba(255,255,255,0.3)',
   glowSize = 12,
   textColor = '#ffffff',
-}: LabelOptions): THREE.CanvasTexture {
+}: LabelOptions): CanvasTexture {
   const key = `${text}|${color}|${fontSize}|${glowColor}|${glowSize}|${textColor}`
   if (spriteTextureCache.has(key)) {
     return spriteTextureCache.get(key)!
@@ -105,7 +83,7 @@ export function getLabelTexture({
   const ctx = canvas.getContext('2d')!
   const deviceRatio = Math.min(window.devicePixelRatio || 1, 2)
 
-  // Medir texto primeiro para dimensionar o canvas
+  // Measure text first to size the canvas
   ctx.font = `bold ${fontSize}px Inter, sans-serif`
   const metrics = ctx.measureText(text)
   const textWidth = metrics.width
@@ -124,51 +102,23 @@ export function getLabelTexture({
   const cx = (textWidth + padding) / 2
   const cy = (fontSize * 1.8) / 2
 
-  // Glow externo
+  // Outer glow
   ctx.shadowColor = glowColor
   ctx.shadowBlur = glowSize
   ctx.fillStyle = color
   ctx.fillText(text, cx, cy)
 
-  // Glow interno (mais intenso)
+  // Inner glow (more intense)
   ctx.shadowBlur = glowSize / 2
   ctx.fillText(text, cx, cy)
 
-  // Texto principal (sem glow para ficar nítido)
+  // Main text (no glow for sharpness)
   ctx.shadowBlur = 0
   ctx.fillStyle = textColor
   ctx.fillText(text, cx, cy)
 
-  const texture = new THREE.CanvasTexture(canvas)
+  const texture = new CanvasTexture(canvas)
   texture.needsUpdate = true
   spriteTextureCache.set(key, texture)
   return texture
-}
-
-// ---- Disposal Helper ----
-
-/** Percorre um Object3D e faz dispose de todas as geometrias e materiais. */
-export function disposeObject(obj: THREE.Object3D): void {
-  obj.traverse((child) => {
-    if (child instanceof THREE.Mesh) {
-      child.geometry.dispose()
-      if (Array.isArray(child.material)) {
-        child.material.forEach((m) => m.dispose())
-      } else {
-        child.material.dispose()
-      }
-    }
-    if (child instanceof THREE.Sprite) {
-      child.material.map?.dispose()
-      child.material.dispose()
-    }
-  })
-}
-
-/** Limpa todos os caches (útil em hot-reload ou testes). */
-export function clearCaches(): void {
-  sphereGeoCache.clear()
-  boxGeoCache.clear()
-  materialCache.clear()
-  spriteTextureCache.clear()
 }

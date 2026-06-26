@@ -1,13 +1,12 @@
 import React, { useState, useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
 import SectionTitle from '../atoms/SectionTitle'
 import { registerRenderer } from '../../services/contentRegistry'
 import type { SectionRendererProps } from '../../services/contentRegistry'
-import { useTheme } from '../../store/ThemeContext'
-
-/** Renderiza seção code-example com bloco de código e botão copiar. */
+/** Renders a code-example section with code block and copy button. */
 const SectionCodeBlock: React.FC<SectionRendererProps> = React.memo(
   ({ section, groupColor }) => {
-    const { mode } = useTheme()
+    const { t } = useTranslation()
     const [copied, setCopied] = useState(false)
 
     const handleCopy = useCallback(() => {
@@ -25,39 +24,26 @@ const SectionCodeBlock: React.FC<SectionRendererProps> = React.memo(
         <div className="relative">
           {section.code?.language && (
             <div
-              className="absolute left-3 top-2 z-10 rounded px-2 py-0.5 text-[10px] font-medium"
-              style={{
-                color: mode === 'dark' ? '#71717A' : '#A1A1AA',
-                backgroundColor: mode === 'dark' ? 'rgba(0,0,0,0.4)' : 'rgba(0,0,0,0.04)',
-              }}
+              className="absolute left-3 top-2 z-10 rounded px-2 py-0.5 text-[10px] font-medium dark:text-zinc-500 text-zinc-400 dark:bg-black/40 bg-black/3"
             >
               {section.code.language}
             </div>
           )}
           <button
             onClick={handleCopy}
-            className="absolute right-2 top-2 z-10 rounded px-2 py-1 text-[10px] transition-colors"
-            style={{
-              color: mode === 'dark' ? '#71717A' : '#A1A1AA',
-            }}
-            onMouseEnter={(e) => { e.currentTarget.style.color = mode === 'dark' ? '#D4D4D8' : '#52525B' }}
-            onMouseLeave={(e) => { e.currentTarget.style.color = mode === 'dark' ? '#71717A' : '#A1A1AA' }}
-            aria-label={copied ? 'Copiado!' : 'Copiar código'}
+            className="absolute right-2 top-2 z-10 rounded px-2 py-1 text-[10px] transition-colors dark:text-zinc-500 text-zinc-400 hover:dark:text-zinc-300 hover:text-zinc-600"
+            aria-label={copied ? t('codeBlock.copiedAriaLabel') : t('codeBlock.copyAriaLabel')}
           >
-            {copied ? 'Copiado!' : 'Copiar'}
+            {copied ? t('codeBlock.copied') : t('codeBlock.copy')}
           </button>
           <pre
-            className="overflow-x-auto rounded-xl p-4 pt-8 text-xs leading-relaxed"
-            style={{
-              color: mode === 'dark' ? '#A5F3FC' : '#0E7490',
-              backgroundColor: mode === 'dark' ? 'rgba(0,0,0,0.6)' : 'rgba(0,0,0,0.03)',
-            }}
+            className="overflow-x-auto rounded-xl p-4 pt-8 text-xs leading-relaxed dark:text-cyan-100 text-cyan-700 dark:bg-black/60 bg-black/3"
           >
             <code>{section.code?.source}</code>
           </pre>
         </div>
         {section.body && (
-          <p className="mt-2 text-xs" style={{ color: mode === 'dark' ? '#A1A1AA' : '#52525B' }}>{section.body}</p>
+          <p className="mt-2 text-xs dark:text-zinc-400 text-zinc-600">{section.body}</p>
         )}
       </div>
     )
@@ -66,7 +52,7 @@ const SectionCodeBlock: React.FC<SectionRendererProps> = React.memo(
 
 SectionCodeBlock.displayName = 'SectionCodeBlock'
 
-// Auto-registro
+// Auto-registration
 registerRenderer('code-example', SectionCodeBlock)
 
 export default SectionCodeBlock

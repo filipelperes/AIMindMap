@@ -2,7 +2,7 @@ import React from 'react'
 import { getRenderer } from '../../services/contentRegistry'
 import type { ContentSection } from '../../types/mindmap'
 
-// Import das moléculas para registrar os renderers
+// Import molecules to register renderers
 import '../molecules/SectionTextBody'
 import '../molecules/SectionConceptList'
 import '../molecules/SectionCodeBlock'
@@ -19,24 +19,24 @@ interface NodeContentRendererProps {
 }
 
 /**
- * Organismo que faz o dispatch para o renderer correto
- * baseado no tipo da seção (Strategy Pattern via Registry).
+ * Organism that dispatches to the correct renderer
+ * based on section type (Strategy Pattern via Registry).
  * 
- * Em vez de um switch-case rígido, usa o contentRegistry
- * que permite adicionar novos tipos sem modificar este arquivo.
+ * Instead of a rigid switch-case, it uses contentRegistry
+ * which allows adding new types without modifying this file.
  */
 const NodeContentRenderer: React.FC<NodeContentRendererProps> = React.memo(
   ({ section, groupColor }) => {
     const Component = getRenderer(section.type)
 
     if (!Component) {
-      // Fallback para tipos não registrados
+      // Fallback for unregistered types
       return (
         <div>
-          <h3 className="mb-3 text-lg font-semibold text-white/90">
+          <h3 className="mb-3 text-lg font-semibold dark:text-white/90 text-black/85">
             {section.title}
           </h3>
-          <p className="text-sm leading-relaxed text-zinc-300">
+          <p className="text-sm leading-relaxed dark:text-zinc-300 text-zinc-700">
             {section.body}
           </p>
         </div>

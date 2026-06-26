@@ -8,26 +8,26 @@ import {
 } from '../utils/responsiveUtils'
 
 /* ============================================================
-   useResponsiveLayout — Hook que observa a viewport e
-   retorna valores de layout responsivo.
+   useResponsiveLayout — Hook that observes the viewport and
+   returns responsive layout values.
    ============================================================ */
 
 interface ResponsiveLayout {
-  /** Largura da viewport */
+  /** Viewport width */
   viewportWidth: number
-  /** Viewport é mobile? (< 768px) */
+  /** Is viewport mobile? (< 768px) */
   isMobile: boolean
-  /** Tier do dispositivo */
+  /** Device tier */
   tier: DeviceTier
-  /** Largura do painel lateral */
+  /** Sidebar width */
   sidebarWidth: number | string
-  /** Escala do grafo 3D */
+  /** 3D graph scale */
   graphScale: number
 }
 
 /**
- * Hook que acompanha o resize da janela e retorna
- * valores de layout adaptados ao viewport.
+ * Hook that tracks window resize and returns
+ * layout values adapted to the viewport.
  */
 export function useResponsiveLayout(): ResponsiveLayout {
   const [viewportWidth, setViewportWidth] = useState(
@@ -38,7 +38,7 @@ export function useResponsiveLayout(): ResponsiveLayout {
     let timeoutId: ReturnType<typeof setTimeout> | null = null
 
     const handleResize = () => {
-      // Debounce para não disparar em cada pixel
+      // Debounce to avoid firing on every pixel
       if (timeoutId) clearTimeout(timeoutId)
       timeoutId = setTimeout(() => {
         setViewportWidth(window.innerWidth)
@@ -46,7 +46,7 @@ export function useResponsiveLayout(): ResponsiveLayout {
     }
 
     window.addEventListener('resize', handleResize)
-    // Também ouvir mudanças de orientação no mobile
+    // Also listen to orientation changes on mobile
     window.addEventListener('orientationchange', () => {
       setTimeout(() => setViewportWidth(window.innerWidth), 200)
     })

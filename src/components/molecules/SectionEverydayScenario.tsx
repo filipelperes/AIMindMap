@@ -1,10 +1,7 @@
 import React from 'react'
 import { registerRenderer } from '../../services/contentRegistry'
 import type { SectionRendererProps } from '../../services/contentRegistry'
-import { useTheme } from '../../store/ThemeContext'
-
 const SectionEverydayScenario: React.FC<SectionRendererProps> = ({ section, groupColor }) => {
-  const { mode } = useTheme()
   return (
     <div className="rounded-xl border p-4" style={{ borderColor: `${groupColor}20`, backgroundColor: `${groupColor}08` }}>
       <div className="flex items-start gap-3">
@@ -14,12 +11,12 @@ const SectionEverydayScenario: React.FC<SectionRendererProps> = ({ section, grou
             {section.title}
           </h4>
           {section.body && (
-            <p className="mb-3 text-sm leading-relaxed" style={{ color: mode === 'dark' ? '#D4D4D8' : '#3F3F46' }}>{section.body}</p>
+            <p className="mb-3 text-sm leading-relaxed dark:text-zinc-300 text-zinc-700">{section.body}</p>
           )}
           {section.items && (
             <ul className="space-y-2">
               {section.items.map((item, i) => (
-                <li key={i} className="flex gap-2 text-sm leading-relaxed" style={{ color: mode === 'dark' ? '#A1A1AA' : '#52525B' }}>
+                <li key={i} className="flex gap-2 text-sm leading-relaxed dark:text-zinc-400 text-zinc-600">
                   <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full" style={{ backgroundColor: groupColor }} />
                   <span>{item}</span>
                 </li>

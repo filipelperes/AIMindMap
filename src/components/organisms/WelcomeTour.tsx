@@ -1,60 +1,22 @@
 import React, { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { useTheme } from '../../store/ThemeContext'
+import { useTranslation } from 'react-i18next'
 
 const TOUR_KEY = 'aimindmap-tour-completed'
 
-interface TourStep {
-  icon: string
-  title: string
-  description: string
-  highlight?: string
-}
-
-const TOUR_STEPS: TourStep[] = [
-  {
-    icon: '🧠',
-    title: 'Bem-vindo ao AI MindMap!',
-    description: 'Explore o ecossistema de AI Engineering em 3D. Cada molécula é um tópico essencial — clique para aprender.',
-    highlight: '[data-tour="hero"]'
-  },
-  {
-    icon: '🎯',
-    title: 'Roteiro Step-by-Step',
-    description: 'Use o menu lateral para seguir um caminho de aprendizado organizado, do básico ao avançado. Use ← → do teclado para navegar.',
-    highlight: '[data-tour="sidebar"]'
-  },
-  {
-    icon: '🔄',
-    title: 'Moléculas Interativas',
-    description: 'Arraste as moléculas para explorar. Elas flutuam como estrelas no espaço. Clique para ver detalhes. Use + - para zoom, R para resetar.',
-    highlight: '[data-tour="graph"]'
-  },
-  {
-    icon: '📚',
-    title: 'Conteúdo Rico',
-    description: 'Cada molécula tem Q&A, exemplos do cotidiano, código prático e dicas rápidas. Ideal para entrevistas e aprendizado diário.',
-    highlight: '[data-tour="panel"]'
-  },
-  {
-    icon: '📋',
-    title: 'Cheatsheet de Comandos',
-    description: 'Acesse o cheatsheet com atalhos e dicas rápidas para navegar mais rápido pelo MindMap e consultar comandos essenciais.',
-    highlight: '[data-tour="cheatsheet"]'
-  },
-  {
-    icon: '⌨️',
-    title: 'Atalhos do Teclado',
-    description: 'Domine os atalhos: ← → para navegar entre tópicos, + - para zoom, R para resetar a câmera, F para busca rápida. Navegue como um profissional.',
-    highlight: '[data-tour="shortcuts"]'
-  },
-  {
-    icon: '🌓',
-    title: 'Modo Claro/Escuro',
-    description: 'Alternne entre temas no menu lateral. O app lembra sua preferência. Comece explorando!',
-    highlight: '[data-tour="theme"]'
-  }
+const TOUR_HIGHLIGHTS = [
+  '[data-tour="hero"]',
+  '[data-tour="sidebar"]',
+  '[data-tour="graph"]',
+  '[data-tour="panel"]',
+  '[data-tour="cheatsheet"]',
+  '[data-tour="shortcuts"]',
+  '[data-tour="theme"]',
 ]
+
+const TOUR_ICONS = ['🧠', '🎯', '🔄', '📚', '📋', '⌨️', '🌓']
+
+const TOTAL_TOUR_STEPS = 7
 
 interface WelcomeTourProps {
   forceClose?: number
@@ -64,13 +26,13 @@ const WelcomeTour: React.FC<WelcomeTourProps> = React.memo(({ forceClose }) => {
   const [isOpen, setIsOpen] = useState(false)
   const [currentStep, setCurrentStep] = useState(0)
   const [hasCompleted, setHasCompleted] = useState(true)
-  const { mode } = useTheme()
+  const { t } = useTranslation()
   const glowRef = useRef<HTMLDivElement>(null)
   const [glowPosition, setGlowPosition] = useState({ top: 0, left: 0, width: 0, height: 0 })
 
   useEffect(() => {
     if (forceClose && isOpen) completeTour()
-  }, [forceClose])
+  }, [forceClose, isOpen])
 
   useEffect(() => {
     const completed = localStorage.getItem(TOUR_KEY)
@@ -84,10 +46,10 @@ const WelcomeTour: React.FC<WelcomeTourProps> = React.memo(({ forceClose }) => {
   }, [])
 
   useEffect(() => {
-    if (!isOpen || !TOUR_STEPS[currentStep]?.highlight) return
+    if (!isOpen || !TOUR_HIGHLIGHTS[currentStep]) return
 
     const updateGlowPosition = () => {
-      const el = document.querySelector(TOUR_STEPS[currentStep].highlight!)
+      const el = document.querySelector(TOUR_HIGHLIGHTS[currentStep])
       if (el) {
         const rect = el.getBoundingClientRect()
         setGlowPosition({
@@ -116,7 +78,7 @@ const WelcomeTour: React.FC<WelcomeTourProps> = React.memo(({ forceClose }) => {
   }
 
   const nextStep = () => {
-    if (currentStep < TOUR_STEPS.length - 1) {
+    if (currentStep < TOTAL_TOUR_STEPS - 1) {
       setCurrentStep(s => s + 1)
     } else {
       completeTour()
@@ -131,15 +93,14 @@ const WelcomeTour: React.FC<WelcomeTourProps> = React.memo(({ forceClose }) => {
 
   if (hasCompleted) return null
 
-  const step = TOUR_STEPS[currentStep]
-  const isLast = currentStep === TOUR_STEPS.length - 1
+  const isLast = currentStep === TOTAL_TOUR_STEPS - 1
   const isFirst = currentStep === 0
 
   return (
     <AnimatePresence>
       {isOpen && (
         <>
-          {step.highlight && (
+          {TOUR_HIGHLIGHTS[currentStep] && (
             <motion.div
               ref={glowRef}
               className="fixed z-[99] pointer-events-none rounded-2xl"
@@ -186,25 +147,22 @@ const WelcomeTour: React.FC<WelcomeTourProps> = React.memo(({ forceClose }) => {
               stiffness: 250,
               mass: 0.7,
             }}
-            className="fixed left-1/2 top-1/2 z-[101] w-full max-w-md -translate-x-1/2 -translate-y-1/2 rounded-3xl border p-8 shadow-2xl"
+            className="fixed left-1/2 top-1/2 z-[101] w-full max-w-md -translate-x-1/2 -translate-y-1/2 rounded-3xl border p-8 shadow-2xl dark:bg-abyss/95 bg-white/95 dark:border-white/10 border-black/10"
             style={{
-              backgroundColor: mode === 'dark' ? 'rgba(8,11,26,0.95)' : 'rgba(255,255,255,0.95)',
-              borderColor: mode === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
               backdropFilter: 'blur(40px)',
             }}
           >
             <div className="mb-6 flex items-center justify-between">
               <div className="flex gap-1.5">
-                {TOUR_STEPS.map((_, i) => (
+                {Array.from({ length: TOTAL_TOUR_STEPS }).map((_, i) => (
                   <motion.div
                     key={i}
-                    className="rounded-full transition-all duration-500"
+                    className={`rounded-full transition-all duration-500 ${
+                      i === currentStep ? 'bg-neural' : 'dark:bg-white/15 bg-black/15'
+                    }`}
                     style={{
                       width: i === currentStep ? 24 : 8,
                       height: 6,
-                      backgroundColor: i === currentStep
-                        ? '#00FFF0'
-                        : mode === 'dark' ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)',
                     }}
                     animate={i === currentStep ? {
                       scale: [1, 1.25, 1],
@@ -219,10 +177,9 @@ const WelcomeTour: React.FC<WelcomeTourProps> = React.memo(({ forceClose }) => {
               </div>
               <button
                 onClick={completeTour}
-                className="text-xs font-medium cursor-pointer transition-all hover:opacity-70"
-                style={{ color: mode === 'dark' ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)' }}
+                className="text-xs font-medium cursor-pointer transition-all hover:opacity-70 dark:text-white/30 text-black/30"
               >
-                Pular
+                {t('tour.skip')}
               </button>
             </div>
 
@@ -231,27 +188,25 @@ const WelcomeTour: React.FC<WelcomeTourProps> = React.memo(({ forceClose }) => {
               animate={{ y: [0, -5, 0] }}
               transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
             >
-              {step.icon}
+              {TOUR_ICONS[currentStep]}
             </motion.div>
 
             <motion.h2
-              className="mb-2 text-2xl font-bold text-center"
-              style={{ color: mode === 'dark' ? '#F0F4FF' : '#1A1A2E' }}
+              className="mb-2 text-2xl font-bold text-center dark:text-[#F0F4FF] text-[#1A1A2E]"
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.1, duration: 0.4, ease: 'easeOut' }}
             >
-              {step.title}
+              {t(`tour.steps.${currentStep}.title`)}
             </motion.h2>
 
             <motion.p
-              className="mb-8 text-sm leading-relaxed text-center"
-              style={{ color: mode === 'dark' ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)' }}
+              className="mb-8 text-sm leading-relaxed text-center dark:text-white/60 text-black/60"
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.2, duration: 0.4, ease: 'easeOut' }}
             >
-              {step.description}
+              {t(`tour.steps.${currentStep}.description`)}
             </motion.p>
 
             <div className="flex items-center justify-between">
@@ -260,20 +215,15 @@ const WelcomeTour: React.FC<WelcomeTourProps> = React.memo(({ forceClose }) => {
                 disabled={isFirst}
                 whileHover={!isFirst ? { scale: 1.05, x: -2 } : {}}
                 whileTap={!isFirst ? { scale: 0.95 } : {}}
-                className="rounded-xl px-4 py-2 text-sm font-medium transition-all disabled:opacity-30 cursor-pointer disabled:cursor-not-allowed"
-                style={{
-                  backgroundColor: mode === 'dark' ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)',
-                  color: mode === 'dark' ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)',
-                }}
+                className="rounded-xl px-4 py-2 text-sm font-medium transition-all disabled:opacity-30 cursor-pointer disabled:cursor-not-allowed dark:bg-white/6 bg-black/5 dark:text-white/70 text-black/70"
               >
-                ← Anterior
+                {t('tour.previous')}
               </motion.button>
 
               <span
-                className="text-xs tabular-nums"
-                style={{ color: mode === 'dark' ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)' }}
+                className="text-xs tabular-nums dark:text-white/30 text-black/30"
               >
-                {currentStep + 1} / {TOUR_STEPS.length}
+                {t('tour.stepCounter', { current: currentStep + 1, total: TOTAL_TOUR_STEPS })}
               </span>
 
               <motion.button
@@ -283,7 +233,7 @@ const WelcomeTour: React.FC<WelcomeTourProps> = React.memo(({ forceClose }) => {
                 className="rounded-xl px-6 py-2 text-sm font-bold text-white transition-all cursor-pointer"
                 style={{ backgroundColor: '#7C3AED' }}
               >
-                {isLast ? '✨ Começar!' : 'Próximo →'}
+                {isLast ? t('tour.start') : t('tour.next')}
               </motion.button>
             </div>
           </motion.div>

@@ -2,8 +2,8 @@ import { useState, useMemo, useCallback } from 'react'
 import type { MindMapNode } from '../types/mindmap'
 
 /* ============================================================
-   useNodeSelection — Gerencia o estado de seleção de nós.
-   Extraído do App.tsx original para um hook reutilizável.
+   useNodeSelection — Manages node selection state.
+   Extracted from the original App.tsx into a reusable hook.
    ============================================================ */
 
 interface UseNodeSelectionReturn {
@@ -15,8 +15,8 @@ interface UseNodeSelectionReturn {
 }
 
 /**
- * Hook que gerencia qual nó do mindmap está selecionado.
- * @param nodes — Lista completa de nós para derivação.
+ * Hook that manages which mindmap node is selected.
+ * @param nodes — Complete list of nodes for derivation.
  */
 export function useNodeSelection(nodes: MindMapNode[]): UseNodeSelectionReturn {
   const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null)

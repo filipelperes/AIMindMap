@@ -1,33 +1,33 @@
 import React, { lazy, Suspense, useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { useTheme } from '../../store/ThemeContext'
+import { useTranslation } from 'react-i18next'
+import type { GraphData } from '../../types/mindmap'
 
-// Lazy load the heavy 3D components → code splitting automático
+// Lazy load the heavy 3D components → automatic code splitting
 const GraphScene = lazy(() => import('./GraphScene'))
 
 interface LazyGraphSceneProps {
-  data: any
+  data: GraphData
   selectedNodeId: string | null
   onSelect: (nodeId: string | null) => void
 }
 
 /**
- * Loading state com partículas animadas e fade-in.
- * Transição suave para o universo 3D.
+ * Loading state with animated particles and fade-in.
+ * Smooth transition to the 3D universe.
  */
 const GraphLoading: React.FC = React.memo(() => {
-  const { mode } = useTheme()
+  const { t } = useTranslation()
   return (
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       transition={{ duration: 0.8 }}
-      className="absolute inset-0 flex items-center justify-center"
-      style={{ background: mode === 'dark' ? '#080B1A' : '#F0F4FF' }}
+      className="dark:bg-abyss bg-[#F0F4FF] absolute inset-0 flex items-center justify-center"
     >
       <div className="text-center">
-        {/* Partículas animadas */}
+        {/* Animated particles */}
         <div className="relative mb-6 flex items-center justify-center">
           {[...Array(5)].map((_, i) => (
             <motion.div
@@ -56,10 +56,9 @@ const GraphLoading: React.FC = React.memo(() => {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5 }}
-          className="text-sm"
-          style={{ color: mode === 'dark' ? 'rgba(255,255,255,0.4)' : 'rgba(0,0,0,0.4)' }}
+          className="text-sm dark:text-white/40 text-black/40"
         >
-          Montando universo 3D...
+          {t('graphScene.mounting')}
         </motion.div>
       </div>
     </motion.div>
@@ -69,12 +68,12 @@ const GraphLoading: React.FC = React.memo(() => {
 GraphLoading.displayName = 'GraphLoading'
 
 /**
- * LazyGraphScene — carrega o Three.js sob demanda.
+ * LazyGraphScene — loads Three.js on demand.
  * 
  * Code Splitting:
- * - react-force-graph-3d e three.js são carregados via React.lazy()
- * - O chunk 'force-graph' (~2MB) só é baixado quando necessário
- * - Animações de entrada com fade-in para experiência fluida
+ * - react-force-graph-3d and three.js are loaded via React.lazy()
+ * - The 'force-graph' chunk (~2MB) is only downloaded when needed
+ * - Entrance animations with fade-in for a fluid experience
  */
 const LazyGraphScene: React.FC<LazyGraphSceneProps> = React.memo(
   ({ data, selectedNodeId, onSelect }) => {

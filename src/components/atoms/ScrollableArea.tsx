@@ -2,13 +2,13 @@ import React, { type ReactNode } from 'react'
 
 interface ScrollableAreaProps {
   children: ReactNode
-  /** Classes Tailwind adicionais */
+  /** Additional Tailwind classes */
   className?: string
-  /** Altura máxima (ex: 'full' para flex-1) */
+  /** Full height (e.g. 'full' for flex-1) */
   fullHeight?: boolean
 }
 
-/** Área com scrollbar customizada (thin scrollbar estilo macOS). */
+/** Area with custom scrollbar (macOS-style thin scrollbar). */
 const ScrollableArea: React.FC<ScrollableAreaProps> = React.memo(
   ({ children, className = '', fullHeight = true }) => {
     return (

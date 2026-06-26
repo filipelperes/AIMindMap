@@ -1,26 +1,26 @@
 import React from 'react'
 import { motion } from 'framer-motion'
+import { useTranslation } from 'react-i18next'
 import { getLearningPath } from '../../data/map'
-import { useTheme } from '../../store/ThemeContext'
 
 interface HeroOverlayProps {
   isMobile?: boolean
 }
 
 const SECTIONS = [
-  { label: '14 Tópicos', desc: 'Fundamentos a Produção' },
-  { label: 'Step-by-Step', desc: 'Roteiro de aprendizado' },
-  { label: '100+ Q&A', desc: 'Perguntas de entrevistas' },
-  { label: 'Código & Exemplos', desc: 'Implementações reais' },
+  { labelKey: 'topics', descKey: 'topics' },
+  { labelKey: 'stepByStep', descKey: 'stepByStep' },
+  { labelKey: 'qa', descKey: 'qa' },
+  { labelKey: 'code', descKey: 'code' },
 ]
 
 /**
- * HeroOverlay — Título principal e navegação inicial.
- * Mostrado quando nenhuma molécula está selecionada.
+ * HeroOverlay — Main title and initial navigation.
+ * Shown when no molecule is selected.
  */
 const HeroOverlay: React.FC<HeroOverlayProps> = React.memo(
   ({ isMobile = false }) => {
-    const { mode } = useTheme()
+    const { t } = useTranslation()
     const steps = getLearningPath()
 
     return (
@@ -38,107 +38,75 @@ const HeroOverlay: React.FC<HeroOverlayProps> = React.memo(
           maxWidth: isMobile ? '90%' : 560,
         }}
       >
-        {/* Título principal */}
+        {/* Main title */}
         <div className="animate-stagger-fade-in delay-100">
           <h1
-            className={`mb-2 font-black ${
+            className={`mb-2 font-black text-text-primary ${
               isMobile ? 'text-4xl' : 'text-6xl'
             }`}
             style={{
-              color: mode === 'dark' ? '#ffffff' : '#0A0A1A',
-              textShadow: mode === 'dark'
-                ? '0 0 40px rgba(0,255,240,0.3), 0 0 80px rgba(0,255,240,0.1)'
-                : '0 0 40px rgba(124,58,237,0.15), 0 0 80px rgba(124,58,237,0.05)',
+              textShadow: 'var(--shadow-hero-title)',
             }}
           >
             AI{' '}
-            <span className={`animate-gradient-shift bg-clip-text text-transparent ${
-              mode === 'dark'
-                ? 'bg-gradient-to-r from-cyan-400 via-purple-500 to-pink-500'
-                : 'bg-gradient-to-r from-violet-600 via-purple-500 to-fuchsia-500'
-            }`}>
+            <span className="animate-gradient-shift bg-clip-text text-transparent bg-[var(--gradient-hero-title)]">
               MINDMAP
             </span>
           </h1>
         </div>
 
-        <p className={`animate-stagger-fade-in delay-300 mb-6 leading-relaxed drop-shadow-md ${
+        <p className={`animate-stagger-fade-in delay-300 mb-6 leading-relaxed drop-shadow-md text-text-secondary ${
           isMobile ? 'text-sm' : 'text-base'
         }`}
-          style={{ color: mode === 'dark' ? '#D4D4D8' : '#3F3F6E' }}
         >
-          Um mapa interativo 3D do ecossistema de AI Engineering.
+          {t('hero.subtitle')}
           <br />
-          Cada molécula é um tópico. Gire, clique, explore.
+          {t('hero.subtitle2')}
         </p>
 
         {/* Stats badges */}
         <div className="animate-stagger-fade-in delay-500 pointer-events-auto mb-8 flex flex-wrap gap-2">
           {SECTIONS.map((s) => (
             <span
-              key={s.label}
-              className="glass-light inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium hover-lift"
-              style={{
-                borderColor: mode === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(124,58,237,0.12)',
-                color: mode === 'dark' ? '#D4D4D8' : '#3F3F6E',
-              }}
+              key={s.labelKey}
+              className="glass-light inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-medium hover-lift dark:border-white/10 border-cyber/12 text-text-secondary"
             >
               <span className="h-1.5 w-1.5 rounded-full bg-cyan-400 animate-breathe-glow" />
-              {s.label}
-              <span style={{ color: mode === 'dark' ? '#71717A' : '#8B8BA7' }}>·</span>
-              <span style={{ color: mode === 'dark' ? '#71717A' : '#8B8BA7' }}>{s.desc}</span>
+              {t(`hero.sections.${s.labelKey}.label`)}
+              <span className="text-text-muted">·</span>
+              <span className="text-text-muted">{t(`hero.sections.${s.descKey}.desc`)}</span>
             </span>
           ))}
         </div>
 
         {/* Learning path mini preview */}
         <div className="animate-stagger-fade-in delay-700 pointer-events-auto space-y-0.5">
-          <p className="mb-2 text-[10px] font-bold uppercase tracking-widest"
-            style={{ color: mode === 'dark' ? '#71717A' : '#6D28D9' }}
+          <p className="mb-2 text-[10px] font-bold uppercase tracking-widest dark:text-zinc-500 text-cyber"
           >
-            ROTEIRO DE APRENDIZADO
+            {t('hero.learningPath')}
           </p>
           <div className="flex flex-wrap gap-1.5">
             {steps.slice(0, isMobile ? 5 : 7).map((node, i) => (
               <span
                 key={node.id}
-                className="glass-light inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-medium hover-lift"
-                style={{
-                  color: mode === 'dark' ? '#A1A1AA' : '#3F3F6E',
-                }}
+                className="glass-light inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[10px] font-medium hover-lift text-text-secondary"
               >
-                <span style={{ color: mode === 'dark' ? '#52525B' : '#8B8BA7' }}>{i + 1}.</span>
+                <span className="text-text-muted">{i + 1}.</span>
                 {node.id}
               </span>
             ))}
             <span
-              className="glass-light inline-flex items-center rounded-full px-2.5 py-1 text-[10px]"
-              style={{
-                color: mode === 'dark' ? '#71717A' : '#8B8BA7',
-              }}
+              className="glass-light inline-flex items-center rounded-full px-2.5 py-1 text-[10px] text-text-muted"
             >
-              +{steps.length - (isMobile ? 5 : 7)} mais
+              {t('hero.more', { count: steps.length - (isMobile ? 5 : 7) })}
             </span>
           </div>
         </div>
 
         {/* Keyboard hint */}
-        <p className="animate-stagger-fade-in delay-1000 pointer-events-auto mt-8 text-[11px]"
-          style={{ color: mode === 'dark' ? '#52525B' : '#8B8BA7' }}
+        <p className="animate-stagger-fade-in delay-1000 pointer-events-auto mt-8 text-[11px] text-text-muted"
         >
-          🖱 Clique para explorar · <kbd className="glass-light rounded px-1.5 py-0.5 font-mono"
-            style={{
-              color: mode === 'dark' ? '#71717A' : '#6D28D9',
-            }}
-          >+</kbd> <kbd className="glass-light rounded px-1.5 py-0.5 font-mono"
-            style={{
-              color: mode === 'dark' ? '#71717A' : '#6D28D9',
-            }}
-          >-</kbd> zoom · <kbd className="glass-light rounded px-1.5 py-0.5 font-mono"
-            style={{
-              color: mode === 'dark' ? '#71717A' : '#6D28D9',
-            }}
-          >R</kbd> reset
+          🖱 {t('hero.subtitle')} · <kbd className="glass-light rounded px-1.5 py-0.5 font-mono dark:text-zinc-500 text-cyber">+</kbd> <kbd className="glass-light rounded px-1.5 py-0.5 font-mono dark:text-zinc-500 text-cyber">-</kbd> zoom · <kbd className="glass-light rounded px-1.5 py-0.5 font-mono dark:text-zinc-500 text-cyber">R</kbd> reset
         </p>
       </motion.div>
     )

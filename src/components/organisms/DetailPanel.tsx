@@ -1,10 +1,12 @@
 import React from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import { useTranslation } from 'react-i18next'
 import Badge from '../atoms/Badge'
 import CloseButton from '../atoms/CloseButton'
 import ScrollableArea from '../atoms/ScrollableArea'
 import NodeContentRenderer from './NodeContentRenderer'
 import { useTheme } from '../../store/ThemeContext'
+import { useLocalizedNodeContent } from '../../hooks/useLocalizedNodeContent'
 import type { MindMapNode } from '../../types/mindmap'
 
 interface DetailPanelProps {
@@ -15,21 +17,29 @@ interface DetailPanelProps {
 }
 
 /**
- * Organismo: painel de detalhes com conteúdo expandido.
- * TUDO scrollável — nada fixado (shrink-0 removido de everyday/quicktip).
+ * Organism: detail panel with expanded content.
+ * Header, group badge and close button are fixed at top.
+ * Summary, sections, tips and examples scroll below.
  */
 const DetailPanel: React.FC<DetailPanelProps> = React.memo(
   ({ node, onClose, panelWidth = 420, isMobile = false }) => {
-    const { mode, getGroupPalette } = useTheme()
+    const { getGroupPalette } = useTheme()
+    const { t } = useTranslation()
+
+    // Hooks must be called unconditionally — call before early return
+    const localizedNode = useLocalizedNodeContent(node)
+
     if (!node) return null
 
     const palette = getGroupPalette(node.group)
-    const hasEveryday = node.content.everydayExample
-    const hasTip = node.content.quickTip
+    const content = localizedNode?.content ?? node.content
+    const isLoading = !content
+    const hasEveryday = content?.everydayExample
+    const hasTip = content?.quickTip
 
     return (
       <AnimatePresence>
-        {/* Backdrop transparente — clicar fora fecha o painel */}
+        {/* Transparent backdrop — clicking outside closes the panel */}
         <motion.div
           key={`backdrop-${node.id}`}
           className="fixed inset-0 z-40"
@@ -58,24 +68,20 @@ const DetailPanel: React.FC<DetailPanelProps> = React.memo(
               : { opacity: 0, x: 400 }
           }
           transition={{ type: 'spring', damping: 30, stiffness: 220, mass: 0.8 }}
-          className={`z-50 flex flex-col overflow-hidden rounded-3xl border ${
+          className={`z-50 flex flex-col overflow-hidden rounded-3xl border dark:bg-abyss/72 bg-white/78 dark:border-white/10 border-cyber/12 ${
             isMobile
               ? 'fixed inset-x-4 bottom-4 top-auto max-h-[85vh] p-5'
               : 'fixed right-6 top-6 bottom-6 p-6'
           }`}
           style={{
             ...(isMobile ? {} : { width: panelWidth }),
-            backgroundColor: mode === 'dark' ? 'rgba(8,11,26,0.72)' : 'rgba(255,255,255,0.78)',
-            borderColor: mode === 'dark' ? 'rgba(255,255,255,0.1)' : 'rgba(124,58,237,0.15)',
-            backdropFilter: 'blur(28px) saturate(1.6)',
-            WebkitBackdropFilter: 'blur(28px) saturate(1.6)',
-            boxShadow: mode === 'dark'
-              ? '0 24px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.04)'
-              : '0 24px 80px rgba(124,58,237,0.12), 0 0 0 1px rgba(124,58,237,0.05)',
+            backdropFilter: 'blur(20px) saturate(1.4)',
+            WebkitBackdropFilter: 'blur(20px) saturate(1.4)',
+            boxShadow: 'var(--shadow-panel)',
           }}
         >
-          {/* ── TUDO scrollável ── */}
-          <ScrollableArea className="space-y-5 pr-1">
+          {/* ── Fixed header + badge (do NOT scroll) ── */}
+          <div className="shrink-0 space-y-4">
             {/* Header */}
             <div className="flex items-start justify-between">
               <div className="min-w-0">
@@ -87,21 +93,18 @@ const DetailPanel: React.FC<DetailPanelProps> = React.memo(
                       boxShadow: `0 0 12px ${palette.emissive}`,
                     }}
                   />
-                  <h2 className="text-3xl font-bold truncate"
-                    style={{ color: mode === 'dark' ? '#F0F4FF' : '#1A1A2E' }}
+                  <h2 className="text-3xl font-bold truncate text-text-primary"
                   >
                     {node.id}
                   </h2>
-                  {(node as any).learningStep && (
-                    <span className="text-[10px] font-bold uppercase tracking-widest shrink-0"
-                      style={{ color: mode === 'dark' ? '#71717A' : '#A1A1AA' }}
+                  {node.learningStep && (
+                    <span className="text-[10px] font-bold uppercase tracking-widest shrink-0 text-text-muted"
                     >
-                      Step {(node as any).learningStep}
+                      {t('detailPanel.step', { step: node.learningStep })}
                     </span>
                   )}
                 </div>
-                <p className="mt-1.5 text-sm truncate"
-                  style={{ color: mode === 'dark' ? '#A1A1AA' : '#71717A' }}
+                <p className="mt-1.5 text-sm truncate text-text-secondary"
                 >
                   {node.description}
                 </p>
@@ -109,7 +112,7 @@ const DetailPanel: React.FC<DetailPanelProps> = React.memo(
               <CloseButton onClick={onClose} />
             </div>
 
-            {/* Badge do grupo */}
+            {/* Group badge */}
             <div className="flex items-center gap-2">
               <Badge
                 label={palette.label}
@@ -119,35 +122,38 @@ const DetailPanel: React.FC<DetailPanelProps> = React.memo(
               />
               {hasTip && (
                 <span
-                  className="inline-flex items-center gap-1 rounded-full px-3 py-1 text-[10px] font-medium border"
-                  style={{
-                    backgroundColor: mode === 'dark' ? 'rgba(245,158,11,0.1)' : 'rgba(217,119,6,0.08)',
-                    color: mode === 'dark' ? '#FBBF24' : '#D97706',
-                    borderColor: mode === 'dark' ? 'rgba(245,158,11,0.2)' : 'rgba(217,119,6,0.2)',
-                  }}
+                  className="inline-flex items-center gap-1 rounded-full px-3 py-1 text-[10px] font-medium border dark:bg-amber-500/10 bg-amber-600/8 dark:text-amber-400 text-amber-600 dark:border-amber-500/20 border-amber-600/20"
                 >
-                  ⚡ Dica Rápida
+                  ⚡ {t('detailPanel.quickTip')}
                 </span>
               )}
             </div>
+          </div>
 
-            {/* Summary */}
-            <p className="text-sm leading-relaxed"
-              style={{ color: mode === 'dark' ? '#E4E4E7' : '#3F3F46' }}
-            >
-              {node.content.summary}
-            </p>
+          {/* ── Scrollable content ── */}
+          <ScrollableArea className="mt-5 space-y-5 pr-1 min-h-0">
+            {isLoading ? (
+              <LoadingSkeleton />
+            ) : (
+              <>
+                {/* Summary */}
+                <p className="text-sm leading-relaxed text-text-primary"
+                >
+                  {content.summary}
+                </p>
 
-            {/* Sessões organizadas (nada fixado) */}
-            {node.content.sections.map((section, i) => (
-              <NodeContentRenderer
-                key={i}
-                section={section}
-                groupColor={palette.accent}
-              />
-            ))}
+                {/* Organized sections (nothing fixed) */}
+                {content.sections.map((section, i) => (
+                  <NodeContentRenderer
+                    key={i}
+                    section={section}
+                    groupColor={palette.accent}
+                  />
+                ))}
+              </>
+            )}
 
-            {/* Quick Tip — organizada no scroll, não fixada */}
+            {/* Quick Tip — in the scroll, not fixed */}
             {hasTip && (
               <div
                 className="rounded-xl border p-3 hover-lift"
@@ -160,22 +166,20 @@ const DetailPanel: React.FC<DetailPanelProps> = React.memo(
                 <div className="flex gap-2">
                   <span className="text-sm">⚡</span>
                   <div>
-                    <p className="text-[10px] font-bold uppercase tracking-widest mb-1"
-                      style={{ color: mode === 'dark' ? '#71717A' : '#6D28D9' }}
+                    <p className="text-[10px] font-bold uppercase tracking-widest mb-1 dark:text-zinc-500 text-cyber"
                     >
-                      Dica Rápida
+                      {t('detailPanel.quickTip')}
                     </p>
-                    <p className="text-xs leading-relaxed"
-                      style={{ color: mode === 'dark' ? '#D4D4D8' : '#3F3F6E' }}
+                    <p className="text-xs leading-relaxed text-text-secondary"
                     >
-                      {node.content.quickTip}
+                      {content.quickTip}
                     </p>
                   </div>
                 </div>
               </div>
             )}
 
-            {/* Everyday Example — organizada no scroll, não fixada */}
+            {/* Everyday Example — in the scroll, not fixed */}
             {hasEveryday && (
               <div
                 className="rounded-xl border p-3 hover-lift"
@@ -188,15 +192,13 @@ const DetailPanel: React.FC<DetailPanelProps> = React.memo(
                 <div className="flex gap-2">
                   <span className="text-sm">💡</span>
                   <div>
-                    <p className="text-[10px] font-bold uppercase tracking-widest mb-1"
-                      style={{ color: mode === 'dark' ? '#71717A' : '#6D28D9' }}
+                    <p className="text-[10px] font-bold uppercase tracking-widest mb-1 dark:text-zinc-500 text-cyber"
                     >
-                      Exemplo do Cotidiano
+                      {t('detailPanel.everydayExample')}
                     </p>
-                    <p className="text-xs leading-relaxed"
-                      style={{ color: mode === 'dark' ? '#D4D4D8' : '#3F3F6E' }}
+                    <p className="text-xs leading-relaxed text-text-secondary"
                     >
-                      {node.content.everydayExample}
+                      {content.everydayExample}
                     </p>
                   </div>
                 </div>
@@ -211,3 +213,20 @@ const DetailPanel: React.FC<DetailPanelProps> = React.memo(
 
 DetailPanel.displayName = 'DetailPanel'
 export default DetailPanel
+
+/* ── Internal loading skeleton ── */
+
+const LoadingSkeleton: React.FC = React.memo(() => {
+  const pulse = 'animate-pulse rounded-md'
+  return (
+    <div className="space-y-4">
+      <div className={`${pulse} h-4 w-full dark:bg-white/6 bg-black/6`} />
+      <div className={`${pulse} h-4 w-5/6 dark:bg-white/6 bg-black/6`} />
+      <div className={`${pulse} h-4 w-4/6 dark:bg-white/6 bg-black/6`} />
+      <div className="pt-3">
+        <div className={`${pulse} h-24 w-full rounded-lg dark:bg-white/6 bg-black/6`} />
+      </div>
+      <div className={`${pulse} h-24 w-full rounded-lg dark:bg-white/6 bg-black/6`} />
+    </div>
+  )
+})
